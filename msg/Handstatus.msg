@@ -1,0 +1,3 @@
+float32 handnummer
+float32 hand_id
+float32 handstates
