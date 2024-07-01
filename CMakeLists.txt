@@ -14,7 +14,7 @@ find_package(rclpy REQUIRED)
 find_package(intuitive_hri_messages REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-include_directories(include)
+include_directories(include ${CMAKE_HOME_DIRECTORY}/usr/include)
 
 add_executable(leap_publisher src/LeapMotionPublisher.cpp)
 ament_target_dependencies(leap_publisher
