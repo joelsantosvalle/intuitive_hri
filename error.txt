@@ -16,3 +16,5 @@ LeapMotionListener.c:(.text+0x427): undefined reference to `LeapCreateConnection
 /usr/bin/ld: LeapMotionListener.c:(.text+0x4c1): undefined reference to `LeapDestroyConnection'
 collect2: error: ld returned 1 exit status
 
+ nm -D /usr/lib/ultraleap-hand-tracking-service/libLeapC.so | grep LeapCreateConnection
+000000000009d480 T LeapCreateConnection
