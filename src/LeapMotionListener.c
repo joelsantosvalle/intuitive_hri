@@ -12,7 +12,7 @@ void on_disconnect(LeapMotionListener* listener) {
     printf("Motion sensor disconnected!\n");
 }
 
-void on_exit(LeapMotionListener* listener) {
+void onExit(LeapMotionListener* listener){
     printf("Exited\n");
 }
 
@@ -34,24 +34,23 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
                 (float)frame->nHands,
                 hand->grab_strength,
                 (float)hand->id,
-                hand->stabilized_palm.position.x,
-                hand->stabilized_palm.position.y,
-                hand->stabilized_palm.position.z,
-                hand->time_visible,
+                hand->palm.position.x,
+                hand->palm.position.y,
+                hand->palm.position.z,
+                hand->visible_time,
                 hand->palm.normal.y,
                 hand->palm.velocity.x,
                 hand->palm.velocity.y,
                 hand->palm.velocity.z,
-                hand->palm.basis.x_basis.x,
-                hand->palm.basis.x_basis.y,
-                hand->palm.basis.x_basis.z,
-                hand->palm.basis.y_basis.x,
-                hand->palm.basis.y_basis.y,
-                hand->palm.basis.y_basis.z,
-                hand->palm.basis.z_basis.x,
-                hand->palm.basis.z_basis.y,
-                hand->palm.basis.z_basis.z,
-                1
+                //hand->palm.basis.x_basis.x,
+                //hand->palm.basis.x_basis.y,
+                //hand->palm.basis.x_basis.z,
+                //hand->palm.basis.y_basis.x,
+                //hand->palm.basis.y_basis.y,
+                //hand->palm.basis.y_basis.z,
+                //hand->palm.basis.z_basis.x,
+                //hand->palm.basis.z_basis.y,
+                //hand->palm.basis.z_basis.z,
             };
 
             sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
@@ -92,7 +91,7 @@ int main() {
 
     main_loop(&listener);
 
-    on_exit(&listener);
+    onExit(&listener);
 
     close(listener.udp_socket);
     LeapDestroyConnection(*listener.connection);

@@ -2,7 +2,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <std_msgs/msg/int32.hpp>
-#include "intuitive_hri/msg/orientation.hpp"
+#include "intuitive_hri_messages/msg/orientation.hpp"
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -23,7 +23,7 @@ public:
         pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 1);
         pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_stable", 1);
         pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("life_of_hand", 1);
-        pub_hand_orientation_ = this->create_publisher<intuitive_hri::msg::Orientation>("hand_orientation", 1);
+        pub_hand_orientation_ = this->create_publisher<intuitive_hri_messages::msg::Orientation>("hand_orientation", 1);
         pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 1);
 
         udp_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
@@ -83,15 +83,14 @@ private:
         life_of_hand_in_sensor.data = data[6];
         pub_life_of_hand_->publish(life_of_hand_in_sensor);
 
-        auto palm_direction = data[7]; // Unused in the publishers
-
+        auto palm_direction = data[7]; 
         auto rate_of_change = geometry_msgs::msg::Point();
         rate_of_change.x = data[8];
         rate_of_change.y = data[9];
         rate_of_change.z = data[10];
         pub_hand_rate_of_change_->publish(rate_of_change);
 
-        auto orientation_of_hand = human_robot_interaction::msg::Orientation();
+        auto orientation_of_hand = intuitive_hri_messages::msg::Orientation();
         orientation_of_hand.x_basis[0] = data[11];
         orientation_of_hand.x_basis[1] = data[12];
         orientation_of_hand.x_basis[2] = data[13];
@@ -109,7 +108,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_id_;
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr pub_palm_position_stable_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_life_of_hand_;
-    rclcpp::Publisher<human_robot_interaction::msg::Orientation>::SharedPtr pub_hand_orientation_;
+    rclcpp::Publisher<intuitive_hri_messages::msg::Orientation>::SharedPtr pub_hand_orientation_;
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr pub_hand_rate_of_change_;
 
     int udp_socket_;

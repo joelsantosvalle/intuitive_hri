@@ -11,16 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Handstatus.msg"
-  "msg/JointGroupCommand.msg"
-  "msg/JointGroupSingle.msg"
-  "msg/Orientation.msg"
-  "msg/Position.msg"
-  DEPENDENCIES std_msgs geometry_msgs
-)
+find_package(intuitive_hri_messages REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 include_directories(include)
 
@@ -29,6 +21,7 @@ ament_target_dependencies(leap_publisher
   rclcpp
   std_msgs
   geometry_msgs
+  intuitive_hri_messages
 )
 install(TARGETS leap_publisher
   DESTINATION lib/${PROJECT_NAME}
@@ -36,7 +29,5 @@ install(TARGETS leap_publisher
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/
 )
-
-ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
