@@ -46,7 +46,7 @@ If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` and `source /opt/ros
 #### Connecting the Leap motion sensor
 1. Open a terminal and type:
 ```sh
-sudo leapd
+ultraleap-hand-tracking-control-panel
 ```
 #### Use the Leap Motion sensor
 2. Open a terminal, source it and type the following:
