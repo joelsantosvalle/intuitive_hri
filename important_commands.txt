@@ -1,0 +1,7 @@
+important commands not to forget to run the script
+
+1st
+gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-hand-tracking-service/libLeapC.so -l LeapC && ./LeapListener 
+
+2nd
+./LeapListener
