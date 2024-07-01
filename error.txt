@@ -1,67 +1,18 @@
-In file included from LeapMotionListener.c:1:
-LeapMotionListener.h:17:1: warning: data definition has no type or storage class
-   17 | LeapMotionListener;
-      | ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.h:17:1: warning: type defaults to ‘int’ in declaration of ‘LeapMotionListener’ [-Wimplicit-int]
-LeapMotionListener.h:19:14: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   19 | void on_init(LeapMotionListener* listener);
-      |              ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.h:20:17: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   20 | void on_connect(LeapMotionListener* listener);
-      |                 ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.h:21:20: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   21 | void on_disconnect(LeapMotionListener* listener);
-      |                    ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.h:22:13: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   22 | void onExit(LeapMotionListener* listener);
-      |             ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.h:23:15: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   23 | void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame);
-      |               ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:3:14: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-    3 | void on_init(LeapMotionListener* listener) {
-      |              ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:7:17: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-    7 | void on_connect(LeapMotionListener* listener) {
-      |                 ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:11:20: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   11 | void on_disconnect(LeapMotionListener* listener) {
-      |                    ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:15:13: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   15 | void onExit(LeapMotionListener* listener){
-      |             ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:19:15: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   19 | void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
-      |               ^~~~~~~~~~~~~~~~~~
-LeapMotionListener.c:62:16: error: expected declaration specifiers or ‘...’ before ‘LeapMotionListener’
-   62 | void main_loop(LeapMotionListener* listener) {
-      |                ^~~~~~~~~~~~~~~~~~
+gcc -o LeapListener LeapMotionListener.c && ./LeapListener
+LeapMotionListener.c: In function ‘on_frame’:
+LeapMotionListener.c:48:9: warning: implicit declaration of function ‘usleep’ [-Wimplicit-function-declaration]
+   48 |         usleep(100000);
+      |         ^~~~~~
 LeapMotionListener.c: In function ‘main’:
-LeapMotionListener.c:78:23: error: expected ‘;’ before ‘listener’
-   78 |     LeapMotionListener listener;
-      |                       ^~~~~~~~~
-      |                       ;
-LeapMotionListener.c:79:5: error: ‘listener’ undeclared (first use in this function); did you mean ‘listen’?
-   79 |     listener.connection = malloc(sizeof(LEAP_CONNECTION));
-      |     ^~~~~~~~
-      |     listen
-LeapMotionListener.c:79:5: note: each undeclared identifier is reported only once for each function it appears in
-LeapMotionListener.c:89:5: warning: implicit declaration of function ‘on_init’; did you mean ‘on_exit’? [-Wimplicit-function-declaration]
-   89 |     on_init(&listener);
-      |     ^~~~~~~
-      |     on_exit
-LeapMotionListener.c:90:5: warning: implicit declaration of function ‘on_connect’; did you mean ‘connect’? [-Wimplicit-function-declaration]
-   90 |     on_connect(&listener);
-      |     ^~~~~~~~~~
-      |     connect
-LeapMotionListener.c:92:5: warning: implicit declaration of function ‘main_loop’ [-Wimplicit-function-declaration]
-   92 |     main_loop(&listener);
-      |     ^~~~~~~~~
-LeapMotionListener.c:94:5: warning: implicit declaration of function ‘onExit’; did you mean ‘on_exit’? [-Wimplicit-function-declaration]
-   94 |     onExit(&listener);
-      |     ^~~~~~
-      |     on_exit
-LeapMotionListener.c:96:5: warning: implicit declaration of function ‘close’; did you mean ‘pclose’? [-Wimplicit-function-declaration]
-   96 |     close(listener.udp_socket);
+LeapMotionListener.c:119:5: warning: implicit declaration of function ‘close’; did you mean ‘pclose’? [-Wimplicit-function-declaration]
+  119 |     close(listener.udp_socket);
       |     ^~~~~
       |     pclose
+/usr/bin/ld: /tmp/ccIQkKj2.o: in function `main_loop':
+LeapMotionListener.c:(.text+0x3c7): undefined reference to `LeapPollConnection'
+/usr/bin/ld: /tmp/ccIQkKj2.o: in function `main':
+LeapMotionListener.c:(.text+0x427): undefined reference to `LeapCreateConnection'
+/usr/bin/ld: LeapMotionListener.c:(.text+0x436): undefined reference to `LeapOpenConnection'
+/usr/bin/ld: LeapMotionListener.c:(.text+0x4c1): undefined reference to `LeapDestroyConnection'
+collect2: error: ld returned 1 exit status
+
