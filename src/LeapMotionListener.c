@@ -44,9 +44,9 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
     int handnummer = frame->nHands;
 
     if (handnummer < 1) {
-        float bytes[21] = {0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-        sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
-        usleep(100000);
+        //float bytes[21] = {0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+        //sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
+        //usleep(5000);
     } else {
         for (uint32_t i = 0; i < frame->nHands; ++i) {
             LEAP_HAND* hand = &frame->pHands[i];
@@ -78,7 +78,7 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
             };
 
             sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
-            usleep(50000);
+            usleep(5000);
         }
     }
 }
@@ -86,16 +86,12 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
 void main_loop(LeapMotionListener* listener) {
     while (1) {
         LEAP_CONNECTION_MESSAGE msg;
-        printf("1");
-        if (LeapPollConnection(*listener->connection, 1000, &msg) == eLeapRS_Success) {
+        if (LeapPollConnection(*listener->connection, 10, &msg) == eLeapRS_Success) {
             switch (msg.type) {
                 case eLeapEventType_Tracking:
-                            printf("3");
                     on_frame(listener, msg.tracking_event);
                     break;
                 default:
-                        printf("3");
-
                     break;
             }
         }
