@@ -1,4 +1,4 @@
-#include <LeapC.h> //
+#include <LeapC.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,15 +66,10 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
                 hand->palm.velocity.x,
                 hand->palm.velocity.y,
                 hand->palm.velocity.z,
-                //hand->palm.basis.x_basis.x,
-                //hand->palm.basis.x_basis.y,
-                //hand->palm.basis.x_basis.z,
-                //hand->palm.basis.y_basis.x,
-                //hand->palm.basis.y_basis.y,
-                //hand->palm.basis.y_basis.z,
-                //hand->palm.basis.z_basis.x,
-                //hand->palm.basis.z_basis.y,
-                //hand->palm.basis.z_basis.z,
+                hand->palm.orientation.x,
+                hand->palm.orientation.y,
+                hand->palm.orientation.z,
+                hand->palm.orientation.w,
             };
 
             sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
