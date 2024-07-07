@@ -47,7 +47,7 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
         //float bytes[21] = {0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
         //sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
         //usleep(5000);
-    } else {
+    } else if(handnummer == 1){
         for (uint32_t i = 0; i < frame->nHands; ++i) {
             LEAP_HAND* hand = &frame->pHands[i];
 
