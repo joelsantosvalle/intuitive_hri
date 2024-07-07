@@ -18,13 +18,13 @@ class LeapDataNode : public rclcpp::Node
 public:
     LeapDataNode() : Node("leap_data")
     {
-        pub_number_of_hands_ = this->create_publisher<std_msgs::msg::Float32>("HandNumber", 1);
-        pub_hand_state_ = this->create_publisher<std_msgs::msg::Float32>("hand_state", 1);
-        pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 1);
-        pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_stable", 1);
+        pub_number_of_hands_ = this->create_publisher<std_msgs::msg::Float32>("HandNumber", 10);
+        pub_hand_state_ = this->create_publisher<std_msgs::msg::Float32>("hand_state", 10);
+        pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 10);
+        pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_stable", 10);
         pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("life_of_hand", 1);
-        pub_hand_orientation_ = this->create_publisher<intuitive_hri_messages::msg::Orientation>("hand_orientation", 1);
-        pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 1);
+        pub_hand_orientation_ = this->create_publisher<intuitive_hri_messages::msg::Orientation>("hand_orientation", 10);
+        pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 10);
 
         udp_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
         if (udp_socket_ < 0) {
