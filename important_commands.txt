@@ -7,10 +7,13 @@ gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-han
 ./LeapListener
 
 
-ros2 run ur_client_library start_ursim.sh -m ur3e
-permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.46/networks/ursim_net": dial unix /var/run/docker.sock: connect: permission denied
-Creating ursim_net
-permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
-docker: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied.
-See 'docker run --help'.
-[ros2run]: Process exited with failure 126
+ros2 topic pub --once /urscript_interface/script_command std_msgs/msg/String '{data:
+"def my_prog():
+
+  set_digital_out(1, True)
+
+  movej(p[0.2, 0.3, 0.8, 0, 0, 3.14], a=1.2, v=0.25, r=0)
+
+  textmsg(\"motion finished\")
+
+end"}'
