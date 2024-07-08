@@ -46,7 +46,7 @@ public:
         }
 
         timer_ = this->create_wall_timer(
-            20ms, std::bind(&LeapDataNode::timer_callback, this));
+            10ms, std::bind(&LeapDataNode::timer_callback, this));
     }
 
 private:
