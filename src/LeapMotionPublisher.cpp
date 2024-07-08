@@ -17,13 +17,14 @@ class LeapDataNode : public rclcpp::Node
 public:
     LeapDataNode() : Node("leap_data")
     {
-        pub_number_of_hands_ = this->create_publisher<std_msgs::msg::Float32>("hand_number", 10);
-        pub_hand_state_ = this->create_publisher<std_msgs::msg::Float32>("hand_state", 10);
-        pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 10);
-        pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_sensor", 10);
-        pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("hand_time", 10);
-        pub_hand_orientation_ = this->create_publisher<geometry_msgs::msg::Quaternion>("hand_orientation_sensor", 10);
-        pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 10);
+        pub_number_of_hands_ = this->create_publisher<std_msgs::msg::Float32>("hand_number", 1);
+        pub_hand_state_ = this->create_publisher<std_msgs::msg::Float32>("hand_state", 1);
+        pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 1);
+        pub_hand_normal_ = this->create_publisher<std_msgs::msg::Float32>("hand_normal", 1);
+        pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_sensor", 1);
+        pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("hand_time", 1);
+        pub_hand_orientation_ = this->create_publisher<geometry_msgs::msg::Quaternion>("hand_orientation_sensor", 1);
+        pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 1);
 
         udp_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
         if (udp_socket_ < 0) {
@@ -51,7 +52,7 @@ public:
 private:
     void timer_callback()
     {
-        std::array<float, 21> data;
+        std::array<float, 21> data = {};
         struct sockaddr_in cliaddr;
         socklen_t len = sizeof(cliaddr);
         ssize_t n = recvfrom(udp_socket_, data.data(), data.size() * sizeof(float), MSG_WAITALL, (struct sockaddr *)&cliaddr, &len);
@@ -82,7 +83,10 @@ private:
         life_of_hand_in_sensor.data = data[6];
         pub_life_of_hand_->publish(life_of_hand_in_sensor);
 
-        auto palm_direction = data[7];
+        auto palm_direction = std_msgs::msg::Float32();
+        palm_direction.data = data[7];
+        pub_hand_normal_->publish(palm_direction);
+        
         auto rate_of_change = geometry_msgs::msg::Point();
         rate_of_change.x = data[8];
         rate_of_change.y = data[9];
@@ -100,6 +104,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_number_of_hands_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_state_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_id_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_normal_;
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr pub_palm_position_stable_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_life_of_hand_;
     rclcpp::Publisher<geometry_msgs::msg::Quaternion>::SharedPtr pub_hand_orientation_;
