@@ -15,39 +15,7 @@ using namespace std::chrono_literals;
 class LeapDataNode : public rclcpp::Node
 {
 public:
-    LeapDataNode() : Node("leap_data")
-    {
-        pub_number_of_hands_ = this->create_publisher<std_msgs::msg::Float32>("hand_number", 1);
-        pub_hand_state_ = this->create_publisher<std_msgs::msg::Float32>("hand_state", 1);
-        pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 1);
-        pub_hand_normal_ = this->create_publisher<std_msgs::msg::Float32>("hand_normal", 1);
-        pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_sensor", 1);
-        pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("hand_time", 1);
-        pub_hand_orientation_ = this->create_publisher<geometry_msgs::msg::Quaternion>("hand_orientation_sensor", 1);
-        pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 1);
-
-        udp_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-        if (udp_socket_ < 0) {
-            perror("socket creation failed");
-            exit(EXIT_FAILURE);
-        }
-
-        struct sockaddr_in servaddr;
-        memset(&servaddr, 0, sizeof(servaddr));
-
-        servaddr.sin_family = AF_INET;
-        servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-        servaddr.sin_port = htons(57410);
-
-        if (bind(udp_socket_, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-            perror("bind failed");
-            close(udp_socket_);
-            exit(EXIT_FAILURE);
-        }
-
-        timer_ = this->create_wall_timer(
-            10ms, std::bind(&LeapDataNode::timer_callback, this));
-    }
+    LeapDataNode();
 
 private:
     void timer_callback()
@@ -113,11 +81,3 @@ private:
     int udp_socket_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
-
-int main(int argc, char *argv[])
-{
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<LeapDataNode>());
-    rclcpp::shutdown();
-    return 0;
-}

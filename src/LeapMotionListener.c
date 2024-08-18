@@ -1,3 +1,10 @@
+/**
+*       LeapMotionListener.c
+*
+*       @date 14.06.2024
+*       @author Joel Santos
+*/
+
 #include <LeapC.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,7 +144,9 @@ int main() {
     listener.address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     listener.udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    listener.current_hand_id = -1;  // Initialize current hand ID
+   
+    // Initialize current hand ID
+    listener.current_hand_id = -1;
 
     on_init(&listener);
     on_connect(&listener);
