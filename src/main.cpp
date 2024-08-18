@@ -1,3 +1,4 @@
+/*
 #include "rclcpp/rclcpp.hpp"
 #include "SensorDataNode.hpp"       // Node for retrieving sensor data
 #include "DataPublisherNode.hpp"    // Node for publishing data
@@ -38,3 +39,5 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
+*/
+
