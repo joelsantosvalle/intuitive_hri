@@ -22,7 +22,7 @@ public:
         pub_hand_id_ = this->create_publisher<std_msgs::msg::Float32>("hand_id", 1);
         pub_hand_normal_ = this->create_publisher<std_msgs::msg::Float32>("hand_normal", 1);
         pub_palm_position_stable_ = this->create_publisher<geometry_msgs::msg::Point>("hand_position_sensor", 1);
-        pub_life_of_hand_ = this->create_publisher<std_msgs::msg::Float32>("hand_time", 1);
+        pub_hand_time_in_sensor_ = this->create_publisher<std_msgs::msg::Float32>("hand_time", 1);
         pub_hand_orientation_ = this->create_publisher<geometry_msgs::msg::Quaternion>("hand_orientation_sensor", 1);
         pub_hand_rate_of_change_ = this->create_publisher<geometry_msgs::msg::Point>("hand_rate_of_change", 1);
 
@@ -79,9 +79,9 @@ private:
         coordinates.z = data[5] * 0.001;
         pub_palm_position_stable_->publish(coordinates);
 
-        auto life_of_hand_in_sensor = std_msgs::msg::Float32();
-        life_of_hand_in_sensor.data = data[6];
-        pub_life_of_hand_->publish(life_of_hand_in_sensor);
+        auto hand_time_in_sensor = std_msgs::msg::Float32();
+        hand_time_in_sensor.data = data[6];
+        pub_hand_time_in_sensor_->publish(hand_time_in_sensor);
 
         auto palm_direction = std_msgs::msg::Float32();
         palm_direction.data = data[7];
@@ -106,7 +106,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_id_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_normal_;
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr pub_palm_position_stable_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_life_of_hand_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_hand_time_in_sensor_;
     rclcpp::Publisher<geometry_msgs::msg::Quaternion>::SharedPtr pub_hand_orientation_;
     rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr pub_hand_rate_of_change_;
 

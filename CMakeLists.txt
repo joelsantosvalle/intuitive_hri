@@ -21,7 +21,7 @@ include_directories(include ${CMAKE_HOME_DIRECTORY}/usr/include include/intuitiv
 set(SOURCES
     src/LeapMotionPublisher.cpp        
     src/LeapMotionListener.c
-    src/QuaternionToEuler     
+    src/SensorToRobotCord.cpp     
 )
 
 add_executable(leap_publisher src/LeapMotionPublisher.cpp)
@@ -29,7 +29,6 @@ ament_target_dependencies(leap_publisher
   rclcpp
   std_msgs
   geometry_msgs
-  intuitive_hri_messages
 )
 install(TARGETS leap_publisher
   DESTINATION lib/${PROJECT_NAME}
@@ -40,7 +39,6 @@ ament_target_dependencies(quaternion_to_euler
   rclcpp
   std_msgs
   geometry_msgs
-  intuitive_hri_messages
   tf2
   tf2_ros
 )
