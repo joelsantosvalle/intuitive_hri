@@ -67,3 +67,37 @@ pose:
     y: 0.0
     z: 0.0
     w: 1.0"
+
+
+void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
+{
+    // Original sensor quaternion
+    tf2::Quaternion sensor_quaternion(
+        msg->x,
+        msg->y,
+        msg->z,
+        msg->w);
+
+    // Define the rotation between sensor and robot coordinate systems
+    // 90 degrees around Z-axis followed by 90 degrees around X-axis
+    tf2::Quaternion rotation_quaternion_x, rotation_quaternion_z, combined_rotation;
+    rotation_quaternion_x.setRPY(M_PI_2, 0, 0);  // 90 degrees around X-axis
+    rotation_quaternion_z.setRPY(0, 0, M_PI_2);  // 90 degrees around Z-axis
+
+    // Combine the rotations: Z followed by X
+    combined_rotation = rotation_quaternion_z * rotation_quaternion_x;
+
+    // Apply the combined rotation to the sensor quaternion
+    tf2::Quaternion robot_quaternion = combined_rotation * sensor_quaternion;
+    robot_quaternion.normalize(); // Normalize the result
+
+    // Convert the quaternion to roll, pitch, yaw for the robot's coordinate system
+    tf2::Matrix3x3 m(robot_quaternion);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    // Update the pose message with roll, pitch, yaw as the orientation
+    robot_pose_.orientation.x = roll;
+    robot_pose_.orientation.y = pitch;
+    robot_pose_.orientation.z = yaw;
+}
