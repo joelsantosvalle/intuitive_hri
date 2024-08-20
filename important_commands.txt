@@ -101,3 +101,33 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
     robot_pose_.orientation.y = pitch;
     robot_pose_.orientation.z = yaw;
 }
+
+
+
+void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
+    {
+        // Original quaternion from the sensor
+        tf2::Quaternion sensor_quaternion(
+            msg->x,
+            msg->y,
+            msg->z,
+            msg->w);
+
+        // Define the transformation from sensor to robot
+        tf2::Matrix3x3 rotation_matrix(
+            0,  0, 1,  // Robot's X axis = Sensor's Z axis
+            1,  0, 0,  // Robot's Y axis = Sensor's X axis (but will be negated)
+            0,  1, 0   // Robot's Z axis = Sensor's Y axis
+        );
+
+        // Apply the transformation
+        tf2::Quaternion transformed_quaternion = sensor_quaternion * rotation_matrix.transpose().getRotation();
+
+        // Convert the transformed quaternion to roll, pitch, and yaw
+        tf2::Matrix3x3 m(transformed_quaternion);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+
+        // Print or use roll, pitch, yaw as needed
+        RCLCPP_INFO(this->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
+    }
