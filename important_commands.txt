@@ -156,3 +156,16 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
 
         // Print or use roll, pitch, yaw as needed
         RCLCPP_INFO(this->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
+
+
+
+
+        // Convert the robot quaternion to axis-angle representation
+        tf2Scalar angle = robot_quaternion.getAngle();
+        tf2::Vector3 axis = robot_quaternion.getAxis();
+
+        // Normalize the axis vector (just to ensure it's a unit vector)
+        axis.normalize();
+
+        // Print the axis-angle representation
+        RCLCPP_INFO(this->get_logger(), "Axis: [X: %f, Y: %f, Z: %f], Angle: %f", axis.x(), axis.y(), axis.z(), angle);
