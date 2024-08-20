@@ -131,3 +131,28 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
         // Print or use roll, pitch, yaw as needed
         RCLCPP_INFO(this->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
     }
+
+
+    void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
+    {
+        // Original quaternion from the sensor
+        tf2::Quaternion sensor_quaternion(
+            msg->x,
+            msg->y,
+            msg->z,
+            msg->w);
+
+        // Define the quaternion that rotates from sensor frame to robot frame
+        tf2::Quaternion rotation_quaternion;
+        rotation_quaternion.setRPY(M_PI_2, 0.0, M_PI_2); // Rotate 90 degrees around X, then 90 degrees around Z
+
+        // Apply the transformation
+        tf2::Quaternion robot_quaternion = rotation_quaternion * sensor_quaternion;
+
+        // Convert the transformed quaternion to roll, pitch, and yaw
+        tf2::Matrix3x3 m(robot_quaternion);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+
+        // Print or use roll, pitch, yaw as needed
+        RCLCPP_INFO(this->get_logger(), "Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
