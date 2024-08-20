@@ -24,25 +24,55 @@ set(SOURCES
     src/SensorToRobotCord.cpp     
 )
 
-add_executable(leap_publisher src/LeapMotionPublisher.cpp)
-ament_target_dependencies(leap_publisher
+add_executable(LeapMotionPublisher src/LeapMotionPublisher.cpp)
+ament_target_dependencies(LeapMotionPublisher
   rclcpp
   std_msgs
   geometry_msgs
 )
-install(TARGETS leap_publisher
+install(TARGETS LeapMotionPublisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(quaternion_to_euler src/QuaternionToEuler.cpp)
-ament_target_dependencies(quaternion_to_euler
+add_executable(SensorToRobotPosition src/SensorToRobotPosition.cpp)
+ament_target_dependencies(SensorToRobotPosition
   rclcpp
   std_msgs
   geometry_msgs
   tf2
   tf2_ros
 )
-install(TARGETS quaternion_to_euler
+install(TARGETS SensorToRobotPosition
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(ActionManager src/ActionManager.cpp)
+ament_target_dependencies(ActionManager
+  rclcpp
+  std_msgs
+  geometry_msgs
+)
+install(TARGETS ActionManager
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(TablePickAndPlace src/TablePickAndPlace.cpp)
+ament_target_dependencies(TablePickAndPlace
+  rclcpp
+  std_msgs
+  geometry_msgs
+)
+install(TARGETS TablePickAndPlace
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(OperatorPickAndPlace src/OperatorPickAndPlace.cpp)
+ament_target_dependencies(OperatorPickAndPlace
+  rclcpp
+  std_msgs
+  geometry_msgs
+)
+install(TARGETS OperatorPickAndPlace
   DESTINATION lib/${PROJECT_NAME}
 )
 
