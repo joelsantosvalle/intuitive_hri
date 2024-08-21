@@ -223,3 +223,44 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
     // Your robot control function should be called here
     // For example: robot_command(x, y, z, Rx, Ry, Rz);
 }
+
+
+
+// Step 1: Convert the incoming geometry_msgs::msg::Quaternion to tf2::Quaternion
+    tf2::Quaternion sensor_quat;
+    tf2::fromMsg(*msg, sensor_quat);
+
+    // Step 2: Convert quaternion to RPY (roll, pitch, yaw)
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(sensor_quat).getRPY(roll, pitch, yaw);
+
+    // Debugging output for RPY
+    std::cout << "Sensor RPY: Roll = " << roll << ", Pitch = " << pitch << ", Yaw = " << yaw << "\n";
+
+    // Step 3: Apply the rotation of -90 degrees (which is -M_PI_2 radians) around the X-axis
+    roll += -M_PI_2;  // Adjust roll by -90 degrees
+
+    // Debugging output for adjusted RPY
+    std::cout << "Adjusted RPY: Roll = " << roll << ", Pitch = " << pitch << ", Yaw = " << yaw << "\n";
+
+    // Step 4: Convert the adjusted RPY back to a quaternion
+    tf2::Quaternion robot_quat;
+    robot_quat.setRPY(roll, pitch, yaw);
+
+    // Step 5: Normalize the resulting quaternion (good practice)
+    robot_quat.normalize();
+
+    // Step 6: Convert the quaternion to axis-angle representation
+    tf2::Vector3 axis = robot_quat.getAxis();
+    double angle = robot_quat.getAngle();
+
+    // Step 7: Compute the rotation components Rx, Ry, Rz for the robot
+    double Rx = axis.x() * angle;
+    double Ry = axis.y() * angle;
+    double Rz = axis.z() * angle;
+
+    // Debugging output to check intermediate values
+    std::cout << "Robot Quaternion: (" << robot_quat.x() << ", " << robot_quat.y() << ", " << robot_quat.z() << ", " << robot_quat.w() << ")\n";
+    std::cout << "Rotation Axis: (" << axis.x() << ", " << axis.y() << ", " << axis.z() << ")\n";
+    std::cout << "Rotation Angle: " << angle << "\n";
+    std::cout << "Rx: " << Rx << ", Ry: " << Ry << ", Rz: " << Rz << "\n";
