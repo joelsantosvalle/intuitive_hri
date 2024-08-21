@@ -169,3 +169,57 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
 
         // Print the axis-angle representation
         RCLCPP_INFO(this->get_logger(), "Axis: [X: %f, Y: %f, Z: %f], Angle: %f", axis.x(), axis.y(), axis.z(), angle);
+
+
+
+
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <iostream>
+
+void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
+{
+    // Step 1: Convert the incoming geometry_msgs::msg::Quaternion to tf2::Quaternion
+    tf2::Quaternion sensor_quat;
+    tf2::fromMsg(*msg, sensor_quat);
+
+    // Step 2: Define the rotation that will convert the sensor frame to the robot frame
+    // The sensor frame has x (left), y (up), z (forward)
+    // The robot frame has x (left), y (forward), z (up)
+    // So, we need to rotate around the x-axis by 90 degrees (pi/2 radians)
+    tf2::Quaternion rotation;
+    rotation.setRPY(-M_PI_2, 0, 0); // Rotate around X by -90 degrees (because y goes to z, and z goes to -y)
+
+    // Step 3: Apply the rotation to the sensor quaternion to get the robot quaternion
+    tf2::Quaternion robot_quat = rotation * sensor_quat;
+
+    // Step 4: Normalize the resulting quaternion (good practice)
+    robot_quat.normalize();
+
+    // Step 5: Convert the quaternion to axis-angle representation
+    tf2::Vector3 axis = robot_quat.getAxis();
+    double angle = robot_quat.getAngle();
+
+    // Step 6: Compute the rotation components Rx, Ry, Rz for the robot
+    double Rx = axis.x() * angle;
+    double Ry = axis.y() * angle;
+    double Rz = axis.z() * angle;
+
+    // Debugging output
+    std::cout << "Rotation Axis: (" << axis.x() << ", " << axis.y() << ", " << axis.z() << ")\n";
+    std::cout << "Rotation Angle: " << angle << "\n";
+    std::cout << "Rx: " << Rx << ", Ry: " << Ry << ", Rz: " << Rz << "\n";
+
+    // Now you can use {x, y, z, Rx, Ry, Rz} to command the robot
+    // Assuming x, y, z are from another part of your program or sensor data
+    double x = 0.0;  // Example x value
+    double y = 0.0;  // Example y value
+    double z = 0.0;  // Example z value
+
+    // Command the robot with {x, y, z, Rx, Ry, Rz}
+    // Your robot control function should be called here
+    // For example: robot_command(x, y, z, Rx, Ry, Rz);
+}
