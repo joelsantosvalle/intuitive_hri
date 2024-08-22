@@ -3,8 +3,9 @@
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class SensorToRobotConverter : public rclcpp::Node
 {
@@ -14,7 +15,7 @@ public:
     {
         // Publisher for robot position
         pub_robot_position_ = this->create_publisher<geometry_msgs::msg::Point>("robot_position", 10);
-        pub_robot_position_ = this->create_publisher<geometry_msgs::msg::Vector3>("robot_orientation", 10);
+        pub_robot_orientation_ = this->create_publisher<geometry_msgs::msg::Vector3>("robot_orientation", 10);
 
         // Subscriber to hand orientation
         sub_hand_orientation_ = this->create_subscription<geometry_msgs::msg::Quaternion>(
@@ -60,9 +61,9 @@ private:
         double Ry = axis.y() * angle;
         double Rz = axis.z() * angle;
 
-        robot_pose_.orientation.x = Rz;
-        robot_pose_.orientation.y = Ry;
-        robot_pose_.orientation.z = Rx;
+        robot_pose_.x = Rz;
+        robot_pose_.y = Ry;
+        robot_pose_.z = Rx;
     }
 
     // Callback to handle the position message
@@ -70,7 +71,7 @@ private:
     {
         // Update the pose message with the position
         robot_pose_.x = msg->x;
-        robot_pose_.y = msg->(-1*(msg->z)) - 0.38;
+        robot_pose_.y = (-1*(msg->z)) - 0.38;
         robot_pose_.z = msg->y;
 
         // Publish the updated pose

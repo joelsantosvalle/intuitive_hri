@@ -46,33 +46,13 @@ install(TARGETS SensorToRobotPosition
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(ActionManager src/ActionManager.cpp)
-ament_target_dependencies(ActionManager
+add_executable(RobotControl src/RobotControl.cpp)
+ament_target_dependencies(RobotControl
   rclcpp
   std_msgs
   geometry_msgs
 )
-install(TARGETS ActionManager
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-add_executable(TablePickAndPlace src/TablePickAndPlace.cpp)
-ament_target_dependencies(TablePickAndPlace
-  rclcpp
-  std_msgs
-  geometry_msgs
-)
-install(TARGETS TablePickAndPlace
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-add_executable(OperatorPickAndPlace src/OperatorPickAndPlace.cpp)
-ament_target_dependencies(OperatorPickAndPlace
-  rclcpp
-  std_msgs
-  geometry_msgs
-)
-install(TARGETS OperatorPickAndPlace
+install(TARGETS RobotControl
   DESTINATION lib/${PROJECT_NAME}
 )
 
