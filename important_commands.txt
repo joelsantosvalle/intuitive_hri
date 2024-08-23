@@ -664,6 +664,59 @@ Starting >>> intuitive_hri
       |                                         ^
 /home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:123:16: error: request for member ‘registerCallback’ in ‘*((std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>*)(&((ActionManager*)this)->ActionManager::sync_))->std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::operator->()’, which is of non-class type ‘std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::element_type’ {aka ‘int’}
   123 |         sync_->registerCallback(std::bind(&ActionManager::sensor_data_callback, this,
+
+
+d --packages-select intuitive_hri
+Starting >>> intuitive_hri
+--- stderr: intuitive_hri                             
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:106:58: error: expected unqualified-id before ‘>’ token
+  106 |         std_msgs::msg::Float32, geometry_msgs::msg::Point>> sync_;
+      |                                                          ^~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:108:43: error: ‘SyncPolicy’ was not declared in this scope
+  108 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                           ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:108:53: error: template argument 1 is invalid
+  108 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                                     ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In constructor ‘ActionManager::ActionManager()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:94:17: warning: ‘ActionManager::command_key’ will be initialized after [-Wreorder]
+   94 |     std::string command_key;
+      |                 ^~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:93:36: warning:   ‘std::shared_ptr<UR3Controller> ActionManager::ur3_controller_’ [-Wreorder]
+   93 |     std::shared_ptr<UR3Controller> ur3_controller_;
+      |                                    ^~~~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:83:5: warning:   when initialized here [-Wreorder]
+   83 |     ActionManager() : Node("ActionManager"), command_key(" "), ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this()))
+      |     ^~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::setup_synchronizer()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:120:57: error: ‘SyncPolicy’ was not declared in this scope
+  120 |         sync_ = std::make_shared<SyncType>(new SyncType(SyncPolicy(10),
+      |                                                         ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:122:37: error: new initializer expression list treated as compound expression [-fpermissive]
+  122 |             hand_rate_of_change_sub_));
+      |                                     ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:124:16: error: request for member ‘registerCallback’ in ‘*((std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>*)(&((ActionManager*)this)->ActionManager::sync_))->std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::operator->()’, which is of non-class type ‘std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::element_type’ {aka ‘int’}
+  124 |         sync_->registerCallback(std::bind(&ActionManager::sensor_data_callback, this,
+      |                ^~~~~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::execute_command(std::string)’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:212:53: error: cannot convert ‘Command’ to ‘const CommandJoints&’
+  212 |             ur3_controller_->execute_command_joints(command_joints);
+      |                                                     ^~~~~~~~~~~~~~
+      |                                                     |
+      |                                                     Command
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:59:54: note:   initializing argument 1 of ‘void UR3Controller::execute_command_joints(const CommandJoints&)’
+   59 |     void execute_command_joints(const CommandJoints& command) {
+      |                                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+gmake[2]: *** [CMakeFiles/RobotControl.dir/build.make:76: CMakeFiles/RobotControl.dir/src/RobotControl.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/RobotControl.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
+---
+Failed   <<< intuitive_hri [7.29s, exited with code 2]
+
+Summary: 0 packages finished [7.79s]
+  1 package failed: intuitive_hri
+  1 package had stderr output: intuitive_hri
+
       |                ^~~~~~~~~~~~~~~~
 /home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::execute_command(std::string&)’:
 /home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:211:53: error: cannot convert ‘Command’ to ‘const CommandJoints&’
