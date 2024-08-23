@@ -631,3 +631,56 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
+
+
+
+Starting >>> intuitive_hri
+--- stderr: intuitive_hri                             
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:103:41: error: ‘ExactTime’ in namespace ‘message_filters’ does not name a template type
+  103 |     using SyncPolicy = message_filters::ExactTime<
+      |                                         ^~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:107:43: error: ‘SyncPolicy’ was not declared in this scope
+  107 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                           ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:107:53: error: template argument 1 is invalid
+  107 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                                     ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In constructor ‘ActionManager::ActionManager()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:93:17: warning: ‘ActionManager::command_key’ will be initialized after [-Wreorder]
+   93 |     std::string command_key;
+      |                 ^~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:92:36: warning:   ‘std::shared_ptr<UR3Controller> ActionManager::ur3_controller_’ [-Wreorder]
+   92 |     std::shared_ptr<UR3Controller> ur3_controller_;
+      |                                    ^~~~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:82:5: warning:   when initialized here [-Wreorder]
+   82 |     ActionManager() : Node("ActionManager"), command_key(" "), ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this()))
+      |     ^~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::setup_synchronizer()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:119:35: error: ‘SyncPolicy’ was not declared in this scope
+  119 |         sync_.reset(new SyncType( SyncPolicy(10),
+      |                                   ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:121:41: error: new initializer expression list treated as compound expression [-fpermissive]
+  121 |             hand_rate_of_change_sub_, 10));
+      |                                         ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:123:16: error: request for member ‘registerCallback’ in ‘*((std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>*)(&((ActionManager*)this)->ActionManager::sync_))->std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::operator->()’, which is of non-class type ‘std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::element_type’ {aka ‘int’}
+  123 |         sync_->registerCallback(std::bind(&ActionManager::sensor_data_callback, this,
+      |                ^~~~~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::execute_command(std::string&)’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:211:53: error: cannot convert ‘Command’ to ‘const CommandJoints&’
+  211 |             ur3_controller_->execute_command_joints(command_joints);
+      |                                                     ^~~~~~~~~~~~~~
+      |                                                     |
+      |                                                     Command
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:58:54: note:   initializing argument 1 of ‘void UR3Controller::execute_command_joints(const CommandJoints&)’
+   58 |     void execute_command_joints(const CommandJoints& command) {
+      |                                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+gmake[2]: *** [CMakeFiles/RobotControl.dir/build.make:76: CMakeFiles/RobotControl.dir/src/RobotControl.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/RobotControl.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
+---
+Failed   <<< intuitive_hri [7.20s, exited with code 2]
+
+Summary: 0 packages finished [8.50s]
+  1 package failed: intuitive_hri
+  1 package had stderr output: intuitive_hri
+
