@@ -298,3 +298,35 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
         robot_pose_.orientation.x = Rz;
         robot_pose_.orientation.y = Ry;
         robot_pose_.orientation.z = Rx;
+
+
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In constructor ‘ActionManager::ActionManager()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:82:5: error: uninitialized reference member in ‘std::string&’ {aka ‘class std::__cxx11::basic_string<char>&’} [-fpermissive]
+   82 |     ActionManager() : Node("ActionManager"),ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this()))
+      |     ^~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:94:18: note: ‘std::string& ActionManager::command_key’ should be initialized
+   94 |     std::string& command_key;
+      |                  ^~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::setup_synchronizer()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:123:44: error: ‘CommandSelector’ has not been declared
+  123 |         sync_->registerCallback(std::bind(&CommandSelector::sensor_data_callback, this,
+      |                                            ^~~~~~~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::execute_command(const string&)’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:211:53: error: cannot convert ‘Command’ to ‘const CommandJoints&’
+  211 |             ur3_controller_->execute_command_joints(command_joints);
+      |                                                     ^~~~~~~~~~~~~~
+      |                                                     |
+      |                                                     Command
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:58:54: note:   initializing argument 1 of ‘void UR3Controller::execute_command_joints(const CommandJoints&)’
+   58 |     void execute_command_joints(const CommandJoints& command) {
+      |                                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+gmake[2]: *** [CMakeFiles/RobotControl.dir/build.make:76: CMakeFiles/RobotControl.dir/src/RobotControl.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/RobotControl.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
+---
+Failed   <<< intuitive_hri [7.61s, exited with code 2]
+                                
+Summary: 0 packages finished [9.01s]
+  1 package failed: intuitive_hri
+  1 package had stderr output: intuitive_hri
+
