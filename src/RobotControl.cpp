@@ -9,10 +9,15 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 
-// Command structure to hold position and predefined joint angles
+// Command structure to hold position and joint angles
 struct Command {
     geometry_msgs::msg::Vector3 position;  // Dynamic x, y, z values
-    std::vector<double> joint_angles;      // Predefined joint angles
+    geometry_msgs::msg::Vector3 orientation;      // Predefined joint angles
+};
+
+// Command structure to hold position and joint angles
+struct CommandJoints {
+    geometry_msgs::msg::Vector3 position;  // Dynamic x, y, z values
 };
 
 // Sensor data structure
@@ -23,6 +28,8 @@ struct SensorData {
     float hand_time_in_sensor;
     geometry_msgs::msg::Point hand_rate_of_change;
 };
+
+//Class for communication with the UR3
 
 class UR3Controller {
 public:
@@ -35,11 +42,24 @@ public:
         std::ostringstream script;
         // URScript generation based on predefined joint angles and dynamic x, y, z values
         script << "def my_prog():\n"
-               << "  movej([" << command.joint_angles[0] << ", " << command.joint_angles[1] << ", " 
-               << command.joint_angles[2] << ", " << command.joint_angles[3] << ", " 
-               << command.joint_angles[4] << ", " << command.joint_angles[5] << "], a=1.2, v=0.25)\n"
-               << "  movel(p[" << command.position.x << ", " << command.position.y << ", " 
-               << command.position.z << ", 0, 0, 3.14], a=1.2, v=0.25)\n"
+               << "  movej(p[" << command.position.x << ", " << command.position.y << ", " 
+               << command.position.z << ", " << command.orientation.x << ", " 
+               << command.orientation.y << ", " << command.orientation.z << "], a=1.2, v=0.25, r=0)\n"
+               << "  textmsg(\"motion finished\")\n"
+               << "end";
+
+        std_msgs::msg::String msg;
+        msg.data = script.str();
+        script_command_pub_->publish(msg);
+    }
+
+    void execute_command_joints(const Command& command) {
+        std::ostringstream script;
+        // URScript generation based on predefined joint angles and dynamic x, y, z values
+        script << "def my_prog():\n"
+               << "  movej([" << command.position.x << ", " << command.position.y << ", " 
+               << command.position.z << ", " << command.orientation.x << ", " 
+               << command.orientation.y << ", " << command.orientation.z << "], a=1.2, v=0.25, r=0)\n"
                << "  textmsg(\"motion finished\")\n"
                << "end";
 
@@ -52,6 +72,8 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr script_command_pub_;
 };
+
+//Class for choosing action to be done 
 
 class CommandSelector : public rclcpp::Node
 {
@@ -104,14 +126,18 @@ private:
     }
 
     void initialize_commands() {
-        // Initializing command map with predefined joint angles and placeholder positions
-        command_map_["command1"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 0.0}, 
-                                           {0.0, -1.5, 1.0, -1.5, 0.0, 0.0}};
-        command_map_["command2"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 0.0}, 
-                                           {0.5, -1.0, 1.2, -1.0, 0.5, 0.0}};
-        command_map_["command3"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 0.0}, 
-                                           {1.0, -0.5, 1.5, -0.5, 1.0, 0.0}};
-        // Add more commands as needed...
+        command_map_["left"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
+        command_map_["lefttop"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
+        command_map_["leftcenter"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
+        command_map_["leftbottom"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
+        command_map_["right"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
+        command_map_["righttop"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
+        command_map_["rightcenter"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
+        command_map_["rightbottom"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
+        command_map_["command9"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
+        command_map_["command10"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
+        command_map_["command11"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
+        command_map_["command12"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
     }
 
     void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr hand_state,
