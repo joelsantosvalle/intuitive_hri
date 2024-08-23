@@ -1315,3 +1315,30 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+
+
+void execute_command(const Command& command) {
+    // Create a script with manual spacing and indentation
+    std::string script_part1 = "def my_prog():\n";
+    std::string script_part2 = "  movej(p[";
+    std::string script_part3 = std::to_string(command.position.x) + ", " 
+                               + std::to_string(command.position.y) + ", " 
+                               + std::to_string(command.position.z) + ", "
+                               + std::to_string(command.orientation.x) + ", " 
+                               + std::to_string(command.orientation.y) + ", " 
+                               + std::to_string(command.orientation.z) + "], a=1.2, v=0.25, r=0)";
+    std::string script_part4 = "  textmsg(\"motion finished\")";
+    std::string script_part5 = "end";
+    
+    // Concatenate all parts into one string with manual spacing
+    std::string full_script = script_part1 + "  " + script_part2 + "\n"
+                             + script_part3 + "\n"
+                             + script_part4 + "\n"
+                             + script_part5;
+
+    // Create and publish the message
+    std_msgs::msg::String msg;
+    msg.data = full_script;
+    script_command_pub_->publish(msg);
+}
+
