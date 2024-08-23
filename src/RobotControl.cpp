@@ -80,7 +80,7 @@ class ActionManager : public rclcpp::Node
 {
 public:
     ActionManager() 
-    : Node("command_selector"), 
+    : Node("ActionManager"), 
       ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this())) 
     {
         setup_subscribers();
@@ -90,7 +90,7 @@ public:
 
 private:
     SensorData sensor_data_;
-    std::map<std::string, Command> command_map_;
+    std::map<std::string, std::vector<double>> command_map_;
     std::shared_ptr<UR3Controller> ur3_controller_;
     
     // Subscribers
@@ -127,18 +127,19 @@ private:
     }
 
     void initialize_commands() {
-        command_map_["left"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
-        command_map_["lefttop"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
-        command_map_["leftcenter"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
-        command_map_["leftbottom"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
-        command_map_["right"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
-        command_map_["righttop"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
-        command_map_["rightcenter"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
-        command_map_["rightbottom"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
-        command_map_["command9"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
-        command_map_["command10"] = Command{geometry_msgs::msg::Vector3{1.0, 0.0, 0.0}};
-        command_map_["command11"] = Command{geometry_msgs::msg::Vector3{0.0, 1.0, 0.0}};
-        command_map_["command12"] = Command{geometry_msgs::msg::Vector3{0.0, 0.0, 1.0}};
+        // Initialize the command map with predefined joint angles for each command
+        command_map_["left"] = {0.0, -1.57, 1.0};
+        command_map_["lefttop"] = {0.5, -1.0, 1.5};
+        command_map_["leftcenter"] = {0.0, -1.0, 1.0};
+        command_map_["leftbottom"] = {0.5, -1.57, 1.0};
+        command_map_["right"] = {0.0, -1.57, 0.5};
+        command_map_["righttop"] = {0.5, -1.0, 0.5};
+        command_map_["rightcenter"] = {0.0, -1.57, 0.5};
+        command_map_["rightbottom"] = {0.5, -1.57, 0.5};
+        command_map_["center"] = {0.5, -1.0, 1.0};
+        command_map_["centertop"] = {0.0, -1.57, 1.0};
+        command_map_["centerleftback"] = {0.5, -1.0, 1.5};
+        command_map_["centerrightback"] = {0.0, -1.57, 1.0};
     }
 
     void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr hand_state,
@@ -165,23 +166,67 @@ private:
     }
 
     void evaluate_conditions_and_act() {
-        if (should_pick_object()) {
+        if (should_pick_object_table()) {
             execute_command("command1");  // Example command
-        } else if (should_place_object()) {
+        } else if (should_place_object_table()) {
             execute_command("command2");
         } else if (should_approach_human()) {
             execute_command("command3");
-        } else {
+        } else if (should_place_object_operator()) {
+            execute_command("command3");
+        } else if (should_change_position()) {
+            execute_command("command3");
+        }  else {
             maintain_current_state();
         }
     }
 
-    bool should_pick_object() {
+    void execute_command(const std::string& command_key) {
+        // Find the command in the map
+        auto command_it = command_map_.find(command_key);
+        
+        if (command_it != command_map_.end()) {
+            // Get the joint angles associated with the command
+            std::vector<double> joint_angles = command_it->second;
+            
+            // Create a new CommandJoints object to hold the position and angles
+            Command command_joints;
+            
+            // Populate the joint angles
+            command_joints.joint_angles = joint_angles;
+            
+            // Populate the position with dynamic sensor data
+            command_joints.position.x = sensor_data_.hand_position.x;
+            command_joints.position.y = sensor_data_.hand_position.y;
+            command_joints.position.z = sensor_data_.hand_position.z;
+            
+            // Execute the command using the UR3 controller
+            ur3_controller_->execute_command_joints(command_joints);
+        } else {
+            RCLCPP_WARN(this->get_logger(), "Command not found: %s", command_key.c_str());
+        }
+    }
+
+    // Function to execute command using joint angles
+    void execute_command_joints(const std::string& command_key) {
+        // Find the command in the map
+        auto command_it = command_map_.find(command_key);
+        
+        if (command_it != command_map_.end()) {
+            CommandJoints command_joints;
+            command_joints.joint_angles = command_it->second;
+            ur3_controller_->execute_command_joints(command_joints);
+        } else {
+            RCLCPP_WARN(this->get_logger(), "Command not found: %s", command_key.c_str());
+        }
+    }
+
+    bool should_pick_object_table() {
         // Example condition for picking an object
         return sensor_data_.hand_state > 0.5 && sensor_data_.hand_time_in_sensor > 2.0;
     }
 
-    bool should_place_object() {
+    bool should_place_object_table() {
         // Example condition for placing an object
         return sensor_data_.hand_normal > 0.7 && sensor_data_.hand_rate_of_change.z > 0.3;
     }
@@ -191,21 +236,18 @@ private:
         return sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
-    void execute_command(const std::string& command_key) {
-        auto command_it = command_map_.find(command_key);
-        if (command_it != command_map_.end()) {
-            Command command = command_it->second;
-            // Updating the dynamic position from sensor data
-            command.position.x = sensor_data_.hand_position.x;
-            command.position.y = sensor_data_.hand_position.y;
-            command.position.z = sensor_data_.hand_position.z;
-            ur3_controller_->execute_command(command);
-        }
+    bool should_place_object_operator(){
+        // Example condition for approaching a human
+        return sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+    }
+
+    bool should_change_position(){
+        // Example condition for approaching a human
+        return sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
     void maintain_current_state() {
         RCLCPP_INFO(this->get_logger(), "Maintaining current state");
-        // Add any logic to maintain the current state if no action is needed
     }
 };
 
