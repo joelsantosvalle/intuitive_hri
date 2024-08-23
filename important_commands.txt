@@ -737,3 +737,16 @@ Summary: 0 packages finished [8.50s]
   1 package failed: intuitive_hri
   1 package had stderr output: intuitive_hri
 
+
+
+// Define the SyncPolicy and SyncType inside the class, but outside of any function
+    using SyncPolicy = message_filters::sync_policies::ExactTime<
+        std_msgs::msg::Float32, std_msgs::msg::Float32, 
+        geometry_msgs::msg::Point, std_msgs::msg::Float32, 
+        geometry_msgs::msg::Point>;
+
+    using SyncType = message_filters::Synchronizer<SyncPolicy>;
+
+    // Declare a shared pointer to the synchronizer
+    std::shared_ptr<SyncType> sync_;
+
