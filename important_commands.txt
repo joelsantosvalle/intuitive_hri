@@ -924,3 +924,59 @@ In file included from /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h:3
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_position_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_time_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_rate_of_change_sub_;
+
+
+
+
+
+
+    void setup_subscribers() {
+        // Subscriber to hand state
+        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_state", 10,
+            [this](const std_msgs::msg::Float32::SharedPtr msg) {
+                this->sensor_data_callback(msg, "hand_state");
+            });
+
+        // Subscriber to hand normal
+        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_normal", 10,
+            [this](const std_msgs::msg::Float32::SharedPtr msg) {
+                this->sensor_data_callback(msg, "hand_normal");
+            });
+
+        // Subscriber to hand position
+        hand_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
+            "hand_position_sensor", 10,
+            [this](const geometry_msgs::msg::Point::SharedPtr msg) {
+                this->sensor_data_callback(msg, "hand_position");
+            });
+
+        // Subscriber to hand time
+        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_time", 10,
+            [this](const std_msgs::msg::Float32::SharedPtr msg) {
+                this->sensor_data_callback(msg, "hand_time");
+            });
+
+        // Subscriber to hand rate of change
+        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
+            "hand_rate_of_change", 10,
+            [this](const geometry_msgs::msg::Point::SharedPtr msg) {
+                this->sensor_data_callback(msg, "hand_rate_of_change");
+            });
+    }
+
+    void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr msg, const std::string& topic) {
+        // Handle Float32 messages
+        RCLCPP_INFO(this->get_logger(), "Received %s: %f", topic.c_str(), msg->data);
+        // Call the function to handle all messages here
+        process_received_data();
+    }
+
+    void sensor_data_callback(const geometry_msgs::msg::Point::SharedPtr msg, const std::string& topic) {
+        // Handle Point messages
+        RCLCPP_INFO(this->get_logger(), "Received %s: x: %f, y: %f, z: %f", topic.c_str(), msg->x, msg->y, msg->z);
+        // Call the function to handle all messages here
+        process_received_data();
+    }
