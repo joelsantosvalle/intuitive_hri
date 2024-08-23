@@ -16,6 +16,11 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(message_filters REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(serial REQUIRED)
+find_package(custom_msgs REQUIRED)
+
 
 include_directories(include ${CMAKE_HOME_DIRECTORY}/usr/include include/intuitive_hri)
 
@@ -53,6 +58,8 @@ ament_target_dependencies(RobotControl
   std_msgs
   geometry_msgs
   message_filters
+  tf2
+  tf2_ros
 )
 install(TARGETS RobotControl
   DESTINATION lib/${PROJECT_NAME}

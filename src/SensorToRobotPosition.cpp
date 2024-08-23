@@ -3,9 +3,6 @@
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
-#include <tf2/LinearMath/Quaternion.hpp>
-#include <tf2/LinearMath/Matrix3x3.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class SensorToRobotConverter : public rclcpp::Node
 {
@@ -32,6 +29,7 @@ private:
     // Callback to handle the orientation message
     void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
     {
+        /*
         // Step 1: Convert the incoming geometry_msgs::msg::Quaternion to tf2::Quaternion
         tf2::Quaternion sensor_quat;
         tf2::fromMsg(*msg, sensor_quat);
@@ -64,6 +62,7 @@ private:
         robot_pose_.x = Rz;
         robot_pose_.y = Ry;
         robot_pose_.z = Rx;
+        */
     }
 
     // Callback to handle the position message
