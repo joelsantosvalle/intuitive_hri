@@ -9,15 +9,18 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 
-// Command structure to hold position and joint angles
+// Command structure to hold position and joint angles, position in meters and orientation in radians
 struct Command {
     geometry_msgs::msg::Vector3 position;  // Dynamic x, y, z values
-    geometry_msgs::msg::Vector3 orientation;      // Predefined joint angles
+    geometry_msgs::msg::Vector3 orientation;      // Joint angles
 };
 
-// Command structure to hold position and joint angles
+// Command structure to hold position and joint angles, the joint angles passed to this function should be in radians not degrees
 struct CommandJoints {
-    geometry_msgs::msg::Vector3 position;  // Dynamic x, y, z values
+    std::vector<double> joint_angles;      // Vector to hold 6 joint angles
+
+    // Constructor to initialize the joint_angles vector with 6 elements
+    CommandJoints() : joint_angles(6, 0.0) {}
 };
 
 // Sensor data structure
@@ -40,7 +43,6 @@ public:
 
     void execute_command(const Command& command) {
         std::ostringstream script;
-        // URScript generation based on predefined joint angles and dynamic x, y, z values
         script << "def my_prog():\n"
                << "  movej(p[" << command.position.x << ", " << command.position.y << ", " 
                << command.position.z << ", " << command.orientation.x << ", " 
@@ -53,13 +55,12 @@ public:
         script_command_pub_->publish(msg);
     }
 
-    void execute_command_joints(const Command& command) {
+    void execute_command_joints(const CommandJoints& command) {
         std::ostringstream script;
-        // URScript generation based on predefined joint angles and dynamic x, y, z values
         script << "def my_prog():\n"
-               << "  movej([" << command.position.x << ", " << command.position.y << ", " 
-               << command.position.z << ", " << command.orientation.x << ", " 
-               << command.orientation.y << ", " << command.orientation.z << "], a=1.2, v=0.25, r=0)\n"
+               << "  movej([" << command.joint_angles[0] << ", " << command.joint_angles[1] << ", " 
+               << command.joint_angles[2] << ", " << command.joint_angles[3] << ", " 
+               << command.joint_angles[4] << ", " << command.joint_angles[5] << "], a=1.2, v=0.25, r=0)\n"
                << "  textmsg(\"motion finished\")\n"
                << "end";
 
@@ -75,10 +76,10 @@ private:
 
 //Class for choosing action to be done 
 
-class CommandSelector : public rclcpp::Node
+class ActionManager : public rclcpp::Node
 {
 public:
-    CommandSelector() 
+    ActionManager() 
     : Node("command_selector"), 
       ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this())) 
     {
@@ -211,7 +212,7 @@ private:
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<CommandSelector>());
+    rclcpp::spin(std::make_shared<ActionManager>());
     rclcpp::shutdown();
     return 0;
 }
