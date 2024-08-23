@@ -750,3 +750,29 @@ Summary: 0 packages finished [8.50s]
     // Declare a shared pointer to the synchronizer
     std::shared_ptr<SyncType> sync_;
 
+d --packages-select intuitive_hri
+Starting >>> intuitive_hri
+--- stderr: intuitive_hri                             
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:106:58: error: expected unqualified-id before ‘>’ token
+  106 |         std_msgs::msg::Float32, geometry_msgs::msg::Point>> SyncPolicy;
+      |                                                          ^~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:108:43: error: ‘SyncPolicy’ was not declared in this scope
+  108 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                           ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:108:53: error: template argument 1 is invalid
+  108 |     typedef message_filters::Synchronizer<SyncPolicy> SyncType;
+      |                                                     ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::setup_synchronizer()’:
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:120:53: error: ‘SyncPolicy’ was not declared in this scope
+  120 |         sync_ = std::make_shared<SyncType>(SyncType(SyncPolicy(10),
+      |                                                     ^~~~~~~~~~
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:122:37: error: expression list treated as compound expression in functional cast [-fpermissive]
+  122 |             hand_rate_of_change_sub_));
+      |                                     ^
+/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:124:16: error: request for member ‘registerCallback’ in ‘*((std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>*)(&((ActionManager*)this)->ActionManager::sync_))->std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::operator->()’, which is of non-class type ‘std::__shared_ptr_access<int, __gnu_cxx::_S_atomic, false, false>::element_type’ {aka ‘int’}
+  124 |         sync_->registerCallback(std::bind(&ActionManager::sensor_data_callback, this,
+      |                ^~~~~~~~~~~~~~~~
+gmake[2]: *** [CMakeFiles/RobotControl.dir/build.make:76: CMakeFiles/RobotControl.dir/src/RobotControl.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/RobotControl.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
+---
