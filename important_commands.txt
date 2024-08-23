@@ -1342,3 +1342,22 @@ void execute_command(const Command& command) {
     script_command_pub_->publish(msg);
 }
 
+
+data: 'def my_prog():
+
+  movej(p[0.46366, -0.30596, 0.82824, 0.082, 3.153, 0.092], a=1.2, v=0.25, r=0)
+
+  textmsg("motion finished")
+
+  end'
+---
+data: "def my_prog():\n    movej(p[\n0.246000, -0.240000, 0.031000, 2.077000, -2.303000, 1.151000], a=1.2, v=0.25, r=0)\n  textmsg(\"motion..."
+---
+data: "def my_prog(): \r\n  movej(p[0.246, -0.24, 0.031, 2.077, -2.303, 1.151], a=1.2, v=0.25, r=0)\r\n  textmsg(\"motion finished\")\r\nend"
+---
+data: "def my_prog(): \r\n  movej(p[0.246, -0.24, 0.031, 2.077, -2.303, 1.151], a=1.2, v=0.25, r=0)\r\n  textmsg(\"motion finished\")\r\nend"
+---
+data: "def my_prog(): \r\n  movej(p[0.246, -0.24, 0.031, 2.077, -2.303, 1.151], a=1.2, v=0.25, r=0)\r\n  textmsg(\"motion finished\")\r\nend"
+---
+data: "def my_prog(): \r\n  movej(p[0.246, -0.24, 0.031, 2.077, -2.303, 1.151], a=1.2, v=0.25, r=0)\r\n  textmsg(\"motion finished\")\r\nend"
+
