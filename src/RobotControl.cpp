@@ -81,7 +81,7 @@ class ActionManager : public rclcpp::Node
 public:
     ActionManager() 
     : Node("ActionManager"), 
-      ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this())) 
+      ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this())), command_key("") 
     {
         setup_subscribers();
         setup_synchronizer();
@@ -92,6 +92,7 @@ private:
     SensorData sensor_data_;
     std::map<std::string, std::vector<double>> command_map_;
     std::shared_ptr<UR3Controller> ur3_controller_;
+    std::string& command_key;
     
     // Subscribers
     message_filters::Subscriber<std_msgs::msg::Float32> hand_state_sub_;
@@ -128,11 +129,13 @@ private:
 
     void initialize_commands() {
         // Initialize the command map with predefined joint angles for each command
-        command_map_["left"] = {0.0, -1.57, 1.0};
+        command_map_["left"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
+        command_map_["leftapproach"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
         command_map_["lefttop"] = {0.5, -1.0, 1.5};
         command_map_["leftcenter"] = {0.0, -1.0, 1.0};
         command_map_["leftbottom"] = {0.5, -1.57, 1.0};
-        command_map_["right"] = {0.0, -1.57, 0.5};
+        command_map_["right"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
+        command_map_["rightapproach"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
         command_map_["righttop"] = {0.5, -1.0, 0.5};
         command_map_["rightcenter"] = {0.0, -1.57, 0.5};
         command_map_["rightbottom"] = {0.5, -1.57, 0.5};
@@ -140,6 +143,7 @@ private:
         command_map_["centertop"] = {0.0, -1.57, 1.0};
         command_map_["centerleftback"] = {0.5, -1.0, 1.5};
         command_map_["centerrightback"] = {0.0, -1.57, 1.0};
+        command_map_["home"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
     }
 
     void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr hand_state,
@@ -167,16 +171,18 @@ private:
 
     void evaluate_conditions_and_act() {
         if (should_pick_object_table()) {
-            execute_command("command1");  // Example command
+            execute_command_joints(command_key); 
         } else if (should_place_object_table()) {
-            execute_command("command2");
-        } else if (should_approach_human()) {
-            execute_command("command3");
-        } else if (should_place_object_operator()) {
-            execute_command("command3");
-        } else if (should_change_position()) {
-            execute_command("command3");
-        }  else {
+            execute_command_joints(command_key);
+        } else if (should_approach_human() && correct_hand_position()) {
+            execute_command(command_key);
+        } else if (should_place_object_operator() && correct_hand_position()) {
+            execute_command(command_key);
+        } else if (should_change_position() && correct_hand_position()) {
+            execute_command(command_key);
+        } else if (should_turn() && correct_hand_position()) {
+            execute_command_joints(command_key);
+        } else {
             maintain_current_state();
         }
     }
@@ -192,8 +198,10 @@ private:
             // Create a new CommandJoints object to hold the position and angles
             Command command_joints;
             
-            // Populate the joint angles
-            command_joints.joint_angles = joint_angles;
+            // Assign the joint angles
+            command_joints.orientation.x = joint_angles[0];
+            command_joints.orientation.y = joint_angles[1];
+            command_joints.orientation.z = joint_angles[2];
             
             // Populate the position with dynamic sensor data
             command_joints.position.x = sensor_data_.hand_position.x;
@@ -221,8 +229,12 @@ private:
         }
     }
 
+    bool correct_hand_position()
+    {
+        return true;
+    }
+
     bool should_pick_object_table() {
-        // Example condition for picking an object
         return sensor_data_.hand_state > 0.5 && sensor_data_.hand_time_in_sensor > 2.0;
     }
 
@@ -242,6 +254,11 @@ private:
     }
 
     bool should_change_position(){
+        // Example condition for approaching a human
+        return sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+    }
+
+    bool should_turn(){
         // Example condition for approaching a human
         return sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
