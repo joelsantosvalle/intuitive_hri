@@ -859,3 +859,68 @@ In file included from /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h:3
   162 |         { ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
       |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+    void setup_subscribers() {
+         // Subscriber to hand position
+        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_state", 10,
+            std::bind(&ActionManager::sensor_data_callback, this, std::placeholders::_1));
+             // Subscriber to hand position
+        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_normal", 10,
+            std::bind(&ActionManager::sensor_data_callback, this, std::placeholders::_1));
+             // Subscriber to hand position
+        hand_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
+            "hand_position_sensor", 10,
+            std::bind(&ActionManager::sensor_data_callback, this, std::placeholders::_1));
+             // Subscriber to hand position
+        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+            "hand_time", 10,
+            std::bind(&ActionManager::sensor_data_callback, this, std::placeholders::_1));
+             // Subscriber to hand position
+        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
+            "hand_rate_of_change", 10,
+            std::bind(&ActionManager::sensor_data_callback, this, std::placeholders::_1));
+    }
+
+    void initialize_commands() {
+        // Initialize the command map with predefined joint angles for each command
+        command_map_["left"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
+        command_map_["leftapproach"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
+        command_map_["lefttop"] = {0.5, -1.0, 1.5};
+        command_map_["leftcenter"] = {0.0, -1.0, 1.0};
+        command_map_["leftbottom"] = {0.5, -1.57, 1.0};
+        command_map_["right"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
+        command_map_["rightapproach"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
+        command_map_["righttop"] = {0.5, -1.0, 0.5};
+        command_map_["rightcenter"] = {0.0, -1.57, 0.5};
+        command_map_["rightbottom"] = {0.5, -1.57, 0.5};
+        command_map_["center"] = {0.5, -1.0, 1.0};
+        command_map_["centertop"] = {0.0, -1.57, 1.0};
+        command_map_["centerleftback"] = {0.5, -1.0, 1.5};
+        command_map_["centerrightback"] = {0.0, -1.57, 1.0};
+        command_map_["home"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
+    }
+
+    void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr hand_state,
+                              const std_msgs::msg::Float32::SharedPtr hand_normal,
+                              const geometry_msgs::msg::Point::SharedPtr hand_position,
+                              const std_msgs::msg::Float32::SharedPtr hand_time,
+                              const geometry_msgs::msg::Point::SharedPtr hand_rate_of_change)
+    {
+        //update_sensor_data(hand_state, hand_normal, hand_position, hand_time, hand_rate_of_change);
+        //evaluate_conditions_and_act();
+        int one = 1;
+        if(one == 1)
+        {
+            ur3_controller_->execute_command();
+            one++;
+        }
+    }
+
+  // Subscribers
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_normal_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_position_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_time_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_rate_of_change_sub_;
