@@ -299,34 +299,56 @@ void orientation_callback(const geometry_msgs::msg::Quaternion::SharedPtr msg)
         robot_pose_.orientation.y = Ry;
         robot_pose_.orientation.z = Rx;
 
-
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In constructor ‘ActionManager::ActionManager()’:
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:82:5: error: uninitialized reference member in ‘std::string&’ {aka ‘class std::__cxx11::basic_string<char>&’} [-fpermissive]
-   82 |     ActionManager() : Node("ActionManager"),ur3_controller_(std::make_shared<UR3Controller>(this->shared_from_this()))
-      |     ^~~~~~~~~~~~~
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:94:18: note: ‘std::string& ActionManager::command_key’ should be initialized
-   94 |     std::string& command_key;
-      |                  ^~~~~~~~~~~
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::setup_synchronizer()’:
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:123:44: error: ‘CommandSelector’ has not been declared
-  123 |         sync_->registerCallback(std::bind(&CommandSelector::sensor_data_callback, this,
-      |                                            ^~~~~~~~~~~~~~~
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp: In member function ‘void ActionManager::execute_command(const string&)’:
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:211:53: error: cannot convert ‘Command’ to ‘const CommandJoints&’
-  211 |             ur3_controller_->execute_command_joints(command_joints);
-      |                                                     ^~~~~~~~~~~~~~
-      |                                                     |
-      |                                                     Command
-/home/esseo/intuitive_hr_interaction_ws/src/intuitive_hri/src/RobotControl.cpp:58:54: note:   initializing argument 1 of ‘void UR3Controller::execute_command_joints(const CommandJoints&)’
-   58 |     void execute_command_joints(const CommandJoints& command) {
-      |                                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~
-gmake[2]: *** [CMakeFiles/RobotControl.dir/build.make:76: CMakeFiles/RobotControl.dir/src/RobotControl.cpp.o] Error 1
-gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/RobotControl.dir/all] Error 2
-gmake: *** [Makefile:146: all] Error 2
----
-Failed   <<< intuitive_hri [7.61s, exited with code 2]
-                                
-Summary: 0 packages finished [9.01s]
-  1 package failed: intuitive_hri
-  1 package had stderr output: intuitive_hri
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:228:14: note: provided for ‘template<class T, class P0, class P1> message_filters::Connection message_filters::Signal9<M0, M1, M2, M3, M4, M5, M6, M7, M8>::addCallback(void (T::*)(P0, P1), T*) [with T = T; P0 = P0; P1 = P1; M0 = std_msgs::msg::Float32_<std::allocator<void> >; M1 = std_msgs::msg::Float32_<std::allocator<void> >; M2 = geometry_msgs::msg::Point_<std::allocator<void> >; M3 = std_msgs::msg::Float32_<std::allocator<void> >; M4 = geometry_msgs::msg::Point_<std::allocator<void> >; M5 = message_filters::NullType; M6 = message_filters::NullType; M7 = message_filters::NullType; M8 = message_filters::NullType]’
+  228 |   Connection addCallback(void(T::*callback)(P0, P1), T* t)
+      |              ^~~~~~~~~~~
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:234:14: note: candidate: ‘template<class T, class P0, class P1, class P2> message_filters::Connection message_filters::Signal9<M0, M1, M2, M3, M4, M5, M6, M7, M8>::addCallback(void (T::*)(P0, P1, P2), T*) [with T = T; P0 = P0; P1 = P1; P2 = P2; M0 = std_msgs::msg::Float32_<std::allocator<void> >; M1 = std_msgs::msg::Float32_<std::allocator<void> >; M2 = geometry_msgs::msg::Point_<std::allocator<void> >; M3 = std_msgs::msg::Float32_<std::allocator<void> >; M4 = geometry_msgs::msg::Point_<std::allocator<void> >; M5 = message_filters::NullType; M6 = message_filters::NullType; M7 = message_filters::NullType; M8 = message_filters::NullType]’
+  234 |   Connection addCallback(void(T::*callback)(P0, P1, P2), T* t)
+      |              ^~~~~~~~~~~
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:234:14: note:   template argument deduction/substitution failed:
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:280:40: error: wrong number of template arguments (9, should be 4)
+  272 |     return addCallback<const M0ConstPtr&,
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  273 |                      const M1ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  274 |                      const M2ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  275 |                      const M3ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  276 |                      const M4ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  277 |                      const M5ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  278 |                      const M6ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  279 |                      const M7ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  280 |                      const M8ConstPtr&>(std::bind(callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8, std::placeholders::_9));
+      |                      ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:234:14: note: provided for ‘template<class T, class P0, class P1, class P2> message_filters::Connection message_filters::Signal9<M0, M1, M2, M3, M4, M5, M6, M7, M8>::addCallback(void (T::*)(P0, P1, P2), T*) [with T = T; P0 = P0; P1 = P1; P2 = P2; M0 = std_msgs::msg::Float32_<std::allocator<void> >; M1 = std_msgs::msg::Float32_<std::allocator<void> >; M2 = geometry_msgs::msg::Point_<std::allocator<void> >; M3 = std_msgs::msg::Float32_<std::allocator<void> >; M4 = geometry_msgs::msg::Point_<std::allocator<void> >; M5 = message_filters::NullType; M6 = message_filters::NullType; M7 = message_filters::NullType; M8 = message_filters::NullType]’
+  234 |   Connection addCallback(void(T::*callback)(P0, P1, P2), T* t)
+      |              ^~~~~~~~~~~
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:240:14: note: candidate: ‘template<class T, class P0, class P1, class P2, class P3> message_filters::Connection message_filters::Signal9<M0, M1, M2, M3, M4, M5, M6, M7, M8>::addCallback(void (T::*)(P0, P1, P2, P3), T*) [with T = T; P0 = P0; P1 = P1; P2 = P2; P3 = P3; M0 = std_msgs::msg::Float32_<std::allocator<void> >; M1 = std_msgs::msg::Float32_<std::allocator<void> >; M2 = geometry_msgs::msg::Point_<std::allocator<void> >; M3 = std_msgs::msg::Float32_<std::allocator<void> >; M4 = geometry_msgs::msg::Point_<std::allocator<void> >; M5 = message_filters::NullType; M6 = message_filters::NullType; M7 = message_filters::NullType; M8 = message_filters::NullType]’
+  240 |   Connection addCallback(void(T::*callback)(P0, P1, P2, P3), T* t)
+      |              ^~~~~~~~~~~
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:240:14: note:   template argument deduction/substitution failed:
+/opt/ros/humble/include/message_filters/message_filters/signal9.h:280:40: error: wrong number of template arguments (9, should be 5)
+  272 |     return addCallback<const M0ConstPtr&,
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  273 |                      const M1ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  274 |                      const M2ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  275 |                      const M3ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  276 |                      const M4ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  277 |                      const M5ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  278 |                      const M6ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  279 |                      const M7ConstPtr&,
+      |                      ~~~~~~~~~~~~~~~~~~ 
+  280 |                      const M8ConstPtr&>(std::bind(callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8, std::placeholders::_9));
+      |                      ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
