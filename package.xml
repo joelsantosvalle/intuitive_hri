@@ -13,16 +13,13 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>rclpy</depend>
-  <depend>intuitive_hri_messages</depend>
+  <depend>robotiq_driver</depend>
 
   <build_depend>tf2</build_depend>
   <exec_depend>tf2</exec_depend>
 
   <build_depend>tf2_ros</build_depend>
   <exec_depend>tf2_ros</exec_depend>
-
-  <build_depend>message_filters</build_depend>
-  <exec_depend>message_filters</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

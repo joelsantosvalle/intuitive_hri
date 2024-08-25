@@ -10,6 +10,8 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/exact_time.h>
 #include <string>
+#include "robotiq_driver/robotiq_gripper_interface.hpp"
+#include <thread>
 
 // Command structure to hold position and joint angles, position in meters and orientation in radians
 struct Command {
@@ -25,14 +27,9 @@ struct CommandJoints {
     CommandJoints() : joint_angles(6, 0.0) {}
 };
 
-// Sensor data structure
-struct SensorData {
-    float hand_state;
-    float hand_normal;
-    geometry_msgs::msg::Point hand_position;
-    float hand_time_in_sensor;
-    geometry_msgs::msg::Point hand_rate_of_change;
-};
+constexpr auto kComPort = "/tmp/ttyUR";
+constexpr auto kSlaveID = 0x09;
+RobotiqGripperInterface gripper(kComPort, kSlaveID);
 
 //Class for communication with the UR3
 
@@ -43,62 +40,45 @@ public:
         script_command_pub_ = node_->create_publisher<std_msgs::msg::String>("/urscript_interface/script_command", 10);
     }
 
-    void execute_command(std::vector<double> points) {
+    void pick_object_from_table() {
         std_msgs::msg::String msg;
-        //msg.data = " movej(["  + std::to_string(-1.54) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
-        //script_command_pub_->publish(msg);
-        //rclcpp::sleep_for(std::chrono::seconds(5));
-        //msg.data = " movej(["  + std::to_string(-1.55) +"," +std::to_string(-1.52)+"," +std::to_string(1.51)+"," +std::to_string(-1.487)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
-        //script_command_pub_->publish(msg);
-        //rclcpp::sleep_for(std::chrono::seconds(5));
-        //msg.data = " movej(["  + std::to_string(-1.51) +"," +std::to_string(-1.54)+"," +std::to_string(1.51)+"," +std::to_string(-1.6)+"," +std::to_string(-1.45)+","+ std::to_string(6.26) + "], a=1.2, v=0.32, r=0.01)"; 
-        //t_command_pub_->publish(msg);
-        //rclcpp::sleep_for(std::chrono::seconds(4.3));
         msg.data = " movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=1.2, v=0.25, r=0.01)"; 
         script_command_pub_->publish(msg);
         rclcpp::sleep_for(std::chrono::seconds(6));
         msg.data = " movej(["  + std::to_string(-1.0492) +"," +std::to_string(-0.586)+"," +std::to_string(0.685)+"," +std::to_string(-1.614)+"," +std::to_string(-1.506)+","+ std::to_string(0.495) + "], a=1.0, v=0.15, r=0.01)"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(8));
-        //msg.data = " movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=1.2, v=0.25, r=0.01)"; 
-        //script_command_pub_->publish(msg);
-        //rclcpp::sleep_for(std::chrono::seconds(1));
-        //msg.data = " movej(["  + std::to_string(-1.51) +"," +std::to_string(-1.54)+"," +std::to_string(1.51)+"," +std::to_string(-1.6)+"," +std::to_string(-1.45)+","+ std::to_string(6.26) + "], a=1.2, v=0.32, r=0.01)"; 
-        //script_command_pub_->publish(msg);
-        //msg.data = " movej(["  + std::to_string(-1.55) +"," +std::to_string(-1.52)+"," +std::to_string(1.51)+"," +std::to_string(-1.487)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
-        //script_command_pub_->publish(msg);
-        //msg.data = " movej(["  + std::to_string(-1.54) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
-        //script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(2));
+        std::cout << "Closing gripper...\n" << std::endl;
+        gripper.setGripperPosition(0xFF);
+        rclcpp::sleep_for(std::chrono::seconds(10));
+        msg.data = " movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
+        script_command_pub_->publish(msg);
+    }
+
+    void drop_object_to_table() {
+        std_msgs::msg::String msg;
+        msg.data = " movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=1.2, v=0.25, r=0.01)"; 
+        script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(6));
+        msg.data = " movej(["  + std::to_string(-1.0492) +"," +std::to_string(-0.586)+"," +std::to_string(0.685)+"," +std::to_string(-1.614)+"," +std::to_string(-1.506)+","+ std::to_string(0.495) + "], a=1.0, v=0.15, r=0.01)"; 
+        script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(2));
+        std::cout << "Opening gripper...\n" << std::endl ;
+        gripper.setGripperPosition(0x00);
+        rclcpp::sleep_for(std::chrono::seconds(10));
         msg.data = " movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
         script_command_pub_->publish(msg);
     }
 
     void execute_command(Command command) {
-        std::ostringstream script;
-    
-        script << "def my_prog():\n"
-               << "  movej(p[" << command.position.x << ", " << command.position.y << ", " 
-               << command.position.z << ", " << command.orientation.x << ", " 
-               << command.orientation.y << ", " << command.orientation.z << "], a=1.2, v=0.25, r=0)\n"
-               << "  textmsg(\"motion finished\")\n"
-               << "end";
-
         std_msgs::msg::String msg;
-        msg.data = script.str();
+        msg.data = " movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=1.2, v=0.25, r=0.01)"; 
         script_command_pub_->publish(msg);
     }
 
     void execute_command_joints(CommandJoints command) {
-        std::ostringstream script;
-        script << "def my_prog():\n"
-               << "  movej([" << command.joint_angles[0] << ", " << command.joint_angles[1] << ", " 
-               << command.joint_angles[2] << ", " << command.joint_angles[3] << ", " 
-               << command.joint_angles[4] << ", " << command.joint_angles[5] << "], a=1.2, v=0.25, r=0)\n"
-               << "  textmsg(\"motion finished\")\n"
-               << "end";
-
         std_msgs::msg::String msg;
-        msg.data = script.str();
+        msg.data = " movej(p["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=1.2, v=0.25, r=0.01)"; 
         script_command_pub_->publish(msg);
     }
 
@@ -112,77 +92,72 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" ")
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false)
     {
-        std::cout << "hello 1" <<std::endl;
         setup_subscribers();
-        std::cout << "hello 1" <<std::endl;
         initialize_commands();
-        std::cout << "hello 1" <<std::endl;
-        
-        std::cout << "hello 1" <<std::endl;
-        int one = 1;
-        if(one == 1)
-        {
-            std::vector move = {0.070, -0.409, 0.654, 1.504, -0.349, 0.494};
-            ur3_controller_->execute_command(move);
-            one++;
-        }
+        std::cout << "Deactivating gripper...\n";
+        gripper.deactivateGripper();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::cout << "Activating gripper...Success\n";
+        gripper.activateGripper();
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::cout << "Opening gripper...\n" << std::endl ;
+        gripper.setGripperPosition(0x00);
+         
+        // Set up a timer to periodically call evaluate_conditions_and_act
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(1000),  // Timer period
+            std::bind(&MyNode::evaluate_conditions_and_act, this));
     }
 
 private:
-    SensorData sensor_data_;
     std::map<std::string, std::vector<double>> command_map_;
     std::shared_ptr<UR3Controller> ur3_controller_;
     std::string command_key;
+    float hand_state_;
+    float hand_normal_;
+    geometry_msgs::msg::Point robot_position_;
+    float hand_time_;
+    geometry_msgs::msg::Point hand_rate_of_change_;
+    float offset;
+    bool object_in_gripper;
 
     void setup_subscribers() {
         // Subscriber to hand state
-        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-            "hand_state", 10,
-            [this](const std_msgs::msg::Float32::SharedPtr msg) {
-                this->sensor_data_callback(msg, "hand_state");
-            });
+        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_state", 10, std::bind(&MyNode::handStateCallback, this, std::placeholders::_1));
 
         // Subscriber to hand normal
-        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-            "hand_normal", 10,
-            [this](const std_msgs::msg::Float32::SharedPtr msg) {
-                this->sensor_data_callback(msg, "hand_normal");
-            });
+        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_normal", 10, std::bind(&MyNode::handNormalCallback, this, std::placeholders::_1));
 
         // Subscriber to hand position
-        hand_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
-            "hand_position_sensor", 10,
-            [this](const geometry_msgs::msg::Point::SharedPtr msg) {
-                this->sensor_data_callback(msg, "hand_position");
-            });
+        robot_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>("robot_position", 10, std::bind(&MyNode::handPositionCallback, this, std::placeholders::_1));
 
         // Subscriber to hand time
-        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-            "hand_time", 10,
-            [this](const std_msgs::msg::Float32::SharedPtr msg) {
-                this->sensor_data_callback(msg, "hand_time");
-            });
+        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_time", 10, std::bind(&MyNode::handTimeCallback, this, std::placeholders::_1));
 
         // Subscriber to hand rate of change
-        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>(
-            "hand_rate_of_change", 10,
-            [this](const geometry_msgs::msg::Point::SharedPtr msg) {
-                this->sensor_data_callback(msg, "hand_rate_of_change");
-            });
+        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>("hand_rate_of_change", 10, std::bind(&MyNode::handRateOfChangeCallback, this, std::placeholders::_1));
     }
 
-    void sensor_data_callback(const std_msgs::msg::Float32::SharedPtr msg, const std::string& topic) {
-        // Handle Float32 messages
-        RCLCPP_INFO(this->get_logger(), "Received %s: %f", topic.c_str(), msg->data);
-
-        
+    void handStateCallback(const std_msgs::msg::Float32::SharedPtr msg) {
+        hand_state_ = msg->data;
     }
 
-        void sensor_data_callback(const geometry_msgs::msg::Point::SharedPtr msg, const std::string& topic) {
-        // Handle Point messages
-        RCLCPP_INFO(this->get_logger(), "Received %s: x: %f, y: %f, z: %f", topic.c_str(), msg->x, msg->y, msg->z);
+    void handNormalCallback(const std_msgs::msg::Float32::SharedPtr msg) {
+        hand_normal_ = msg->data;
+    }
+
+    void handPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
+        hand_position_ = *msg;
+    }
+
+    void handTimeCallback(const std_msgs::msg::Float32::SharedPtr msg) {
+        hand_time_ = msg->data;
+    }
+
+    void handRateOfChangeCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
+        hand_rate_of_change_ = *msg;
     }
 
     void initialize_commands() {
@@ -199,43 +174,30 @@ private:
         command_map_["rightbottom"] = {0.5, -1.57, 0.5};
         command_map_["center"] = {0.5, -1.0, 1.0};
         command_map_["centertop"] = {0.0, -1.57, 1.0};
-        command_map_["centerleftback"] = {0.5, -1.0, 1.5};
-        command_map_["centerrightback"] = {0.0, -1.57, 1.0};
-        command_map_["home"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
-    }
-
-    void update_sensor_data(const std_msgs::msg::Float32::SharedPtr& hand_state,
-                            const std_msgs::msg::Float32::SharedPtr& hand_normal,
-                            const geometry_msgs::msg::Point::SharedPtr& hand_position,
-                            const std_msgs::msg::Float32::SharedPtr& hand_time,
-                            const geometry_msgs::msg::Point::SharedPtr& hand_rate_of_change)
-    {
-        sensor_data_.hand_state = hand_state->data;
-        sensor_data_.hand_normal = hand_normal->data;
-        sensor_data_.hand_position = *hand_position;
-        sensor_data_.hand_time_in_sensor = hand_time->data;
-        sensor_data_.hand_rate_of_change = *hand_rate_of_change;
+        command_map_["home"] = {0.0, -1.57, 0.0, -1.57, 0.0, 0.0};
+        command_map_["approachpose"] = {-1.07, -0.747, 0.67, -1.56, -1.51, 0.62};
+        command_map_["pickuppose"] = {-1.0492, -0.586, 0.685, -1.614, -1.506, 0.495};
     }
 
     void evaluate_conditions_and_act() {
         if (should_pick_object_table()) {
-            execute_command_joints(command_key); 
+            ur3_controller_->pick_object_from_table();
         } else if (should_place_object_table()) {
-            execute_command_joints(command_key);
+            ur3_controller_->drop_object_to_table();
         } else if (should_approach_human() && correct_hand_position()) {
-            execute_command(command_key);
+            execute_command(command_key, offset);
         } else if (should_place_object_operator() && correct_hand_position()) {
-            execute_command(command_key);
+            execute_command(command_key, 0.45);
         } else if (should_change_position() && correct_hand_position()) {
-            execute_command(command_key);
+            execute_command(command_key, offset);
         } else if (should_turn() && correct_hand_position()) {
-            execute_command_joints(command_key);
+            execute_command_joints(command_key, 0);
         } else {
             maintain_current_state();
         }
     }
 
-    void execute_command(std::string command_key) {
+    void execute_command(std::string command_key, float offset) {
         // Find the command in the map
         auto command_it = command_map_.find(command_key);
         
@@ -252,9 +214,9 @@ private:
             command_joints.orientation.z = joint_angles[2];
             
             // Populate the position with dynamic sensor data
-            command_joints.position.x = sensor_data_.hand_position.x;
-            command_joints.position.y = sensor_data_.hand_position.y;
-            command_joints.position.z = sensor_data_.hand_position.z;
+            command_joints.position.x = robot_position_.x;
+            command_joints.position.y = robot_position_.y;
+            command_joints.position.z = robot_position_.z + offset;
             
             // Execute the command using the UR3 controller
             ur3_controller_->execute_command(command_joints);
@@ -279,36 +241,46 @@ private:
 
     bool correct_hand_position()
     {
-        return true;
+        return (hand_state_ >= 0 && hand_state_ <= 0.6) && (hand_time_ > 2) && hand_normal_ > 0; 
     }
 
     bool should_pick_object_table() {
-        return true; //sensor_data_.hand_state > 0.5 && sensor_data_.hand_time_in_sensor > 2.0;
+        object_in_gripper = true;
+        if(object_in_gripper == false && hand_time_ > 6)
+        {
+            object_in_gripper = true;
+            return true;
+        }
+        return false;
     }
 
     bool should_place_object_table() {
-        // Example condition for placing an object
-        return true; //sensor_data_.hand_normal > 0.7 && sensor_data_.hand_rate_of_change.z > 0.3;
+        if(object_in_gripper == true && hand_time_ > 6 && (hand_state_ > 0.6 || hand_normal_ < 0))
+        {
+            object_in_gripper = false;
+            return true;
+        }
+        return false;
     }
 
     bool should_approach_human() {
         // Example condition for approaching a human
-        return true; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
     bool should_place_object_operator(){
         // Example condition for approaching a human
-        return true; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
     bool should_change_position(){
         // Example condition for approaching a human
-        return true; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
     bool should_turn(){
         // Example condition for approaching a human
-        return true; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
     }
 
     void maintain_current_state() {
@@ -318,7 +290,7 @@ private:
     // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_normal_sub_;
-    rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_position_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr robot_position_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_time_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_rate_of_change_sub_;
 };
