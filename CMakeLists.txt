@@ -50,22 +50,13 @@ install(TARGETS SensorToRobotPosition
 
 add_executable(RobotControl src/RobotControl.cpp)
 
-target_include_directories(RobotControl PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-
 ament_target_dependencies(RobotControl
   rclcpp
   std_msgs
   geometry_msgs
   tf2
   tf2_ros
-  robotiq_driver
-)
-
-target_link_libraries(RobotControl
-  robotiq_driver
+  ${dependencies} robotiq_driver
 )
 
 install(TARGETS RobotControl
