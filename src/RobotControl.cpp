@@ -118,6 +118,7 @@ private:
     float hand_state_;
     float hand_normal_;
     geometry_msgs::msg::Point robot_position_;
+    geometry_msgs::msg::Point old_robot_position_;
     float hand_time_;
     geometry_msgs::msg::Point hand_rate_of_change_;
     float offset;
@@ -184,13 +185,13 @@ private:
             ur3_controller_->pick_object_from_table();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
-        } else if (should_approach_human() && correct_hand_position()) {
-            execute_command(command_key, offset);
-        } else if (should_place_object_operator() && correct_hand_position()) {
-            execute_command(command_key, 0.45);
-        } else if (should_change_position() && correct_hand_position()) {
-            execute_command(command_key, offset);
         } else if (should_turn() && correct_hand_position()) {
+            execute_command(command_key, offset);
+        } else if (should_approach_human() && correct_hand_position()) {
+            execute_command(command_key, 0.45);
+        } else if (should_place_object_operator() && correct_hand_position()) {
+            execute_command(command_key, offset);
+        } else if (should_change_position() && correct_hand_position()) {
             execute_command_joints(command_key, 0);
         } else {
             maintain_current_state();
@@ -245,7 +246,6 @@ private:
     }
 
     bool should_pick_object_table() {
-        object_in_gripper = true;
         if(object_in_gripper == false && hand_time_ > 6)
         {
             object_in_gripper = true;
@@ -264,23 +264,19 @@ private:
     }
 
     bool should_approach_human() {
-        // Example condition for approaching a human
-        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; 
     }
 
     bool should_place_object_operator(){
-        // Example condition for approaching a human
-        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false;
     }
 
     bool should_change_position(){
-        // Example condition for approaching a human
-        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+        return false; 
     }
 
-    bool should_turn(){
-        // Example condition for approaching a human
-        return false; //sensor_data_.hand_position.x < 0.5 && sensor_data_.hand_position.y > 1.0;
+    bool should_turn()
+        return false; 
     }
 
     void maintain_current_state() {
