@@ -57,6 +57,7 @@ ament_target_dependencies(RobotControl
   tf2
   tf2_ros
   ${dependencies} robotiq_driver
+  sensor_msgs
 )
 
 install(TARGETS RobotControl
