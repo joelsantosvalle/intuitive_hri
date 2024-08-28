@@ -12,6 +12,7 @@
 #include <string>
 #include "robotiq_driver/robotiq_gripper_interface.hpp"
 #include <thread>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 //add 30 mm from position of gripper  in z and 50 mm along the y
 
@@ -53,40 +54,18 @@ public:
         msg.data = "def my_prog():     movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=0.12, v=0.25, r=0.01) "+" movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
         rclcpp::sleep_for(std::chrono::seconds(10));
-        gripper.setGripperPosition(0x00);
-        /*
-        std_msgs::msg::String msg;
-        msg.data = " movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=0.6, v=0.125, r=0.01)"; 
-        script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(12));
-        msg.data = " movej(["  + std::to_string(-1.0492) +"," +std::to_string(-0.586)+"," +std::to_string(0.685)+"," +std::to_string(-1.614)+"," +std::to_string(-1.506)+","+ std::to_string(0.495) + "], a=0.6, v=0.125, r=0.01)"; 
-        script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(4));
-        std::cout << "Closing gripper...\n" << std::endl;
-        gripper.setGripperPosition(0xFF);
-        rclcpp::sleep_for(std::chrono::seconds(8));
-        msg.data = " movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=0.6, v=0.125, r=0.01)"; 
-        script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(14));
-        std::cout << "Opening gripper...\n" << std::endl ;
-        gripper.setGripperPosition(0x00);
-        */
     }
 
     void drop_object_to_table() {
         std_msgs::msg::String msg;
-
-        msg.data = " movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=1.2, v=0.25, r=0.01)"; 
+        msg.data = "def my_prog():     movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=0.14, v=0.30, r=0.01) "+" movej(["  + std::to_string(-1.0492) +"," +std::to_string(-0.586)+"," +std::to_string(0.685)+"," +std::to_string(-1.614)+"," +std::to_string(-1.506)+","+ std::to_string(0.495) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(6));
-        msg.data = " movej(["  + std::to_string(-1.0492) +"," +std::to_string(-0.586)+"," +std::to_string(0.685)+"," +std::to_string(-1.614)+"," +std::to_string(-1.506)+","+ std::to_string(0.495) + "], a=1.0, v=0.15, r=0.01)"; 
-        script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(2));
-        std::cout << "Opening gripper...\n" << std::endl ;
-        gripper.setGripperPosition(0x00);
         rclcpp::sleep_for(std::chrono::seconds(10));
-        msg.data = " movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=1.2, v=0.32, r=0.01)"; 
+        gripper.setGripperPosition(0x00);
+        rclcpp::sleep_for(std::chrono::seconds(4));
+        msg.data = "def my_prog():     movej(["  + std::to_string(-1.07) +"," +std::to_string(-0.747)+"," +std::to_string(0.67)+"," +std::to_string(-1.56)+"," +std::to_string(-1.51)+","+ std::to_string(0.62) + "], a=0.12, v=0.25, r=0.01) "+" movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(10));
     }
 
     void execute_command(Command command) {
@@ -111,7 +90,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false), picked_(false), placed_(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false), picked_(false), placed_(false), processing_enabled(true)
     {
         setup_subscribers();
         initialize_commands();
@@ -144,6 +123,8 @@ private:
     bool object_in_gripper;
     rclcpp::TimerBase::SharedPtr timer_;
     bool picked_, placed_;
+    sensor_msgs::msg::JointState joint_states;
+    bool processing_enabled;
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -151,6 +132,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr robot_position_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_time_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_rate_of_change_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
 
     void setup_subscribers() {
         // Subscriber to hand state
@@ -167,14 +149,22 @@ private:
 
         // Subscriber to hand rate of change
         hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>("hand_rate_of_change", 10, std::bind(&ActionManager::handRateOfChangeCallback, this, std::placeholders::_1));
+
+        joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&ActionManager::jointStatesCallback, this, std::placeholders::_1));
     }
 
     void handStateCallback(const std_msgs::msg::Float32::SharedPtr msg) {
-        hand_state_ = msg->data;
+        if(processing_enabled)
+        {
+            hand_state_ = msg->data;
+        }
     }
 
     void handNormalCallback(const std_msgs::msg::Float32::SharedPtr msg) {
-        hand_normal_ = msg->data;
+        if(processing_enabled)
+        {
+            hand_normal_ = msg->data;
+        }
     }
 
     void handPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
@@ -187,6 +177,10 @@ private:
 
     void handRateOfChangeCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
         hand_rate_of_change_ = *msg;
+    }
+
+    void jointStatesCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
+        joint_states = *msg;
     }
 
     void initialize_commands() {
@@ -211,8 +205,10 @@ private:
     void evaluate_conditions_and_act() {
         if (should_pick_object_table()) {
             ur3_controller_->pick_object_from_table();
+            reset_hand_state();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
+            reset_hand_state();
         } else if (should_turn() && correct_hand_position()) {
             execute_command(command_key, offset);
         } else if (should_approach_human() && correct_hand_position()) {
@@ -223,6 +219,7 @@ private:
             execute_command_joints(command_key);
         } else {
             maintain_current_state();
+            processing_enabled = true;
         }
     }
 
@@ -268,13 +265,20 @@ private:
         }
     }
 
+    void reset_hand_state()
+    {
+        hand_normal_ = 0;
+        hand_time_ = 0;
+        processing_enabled = false;
+    }
+
     bool correct_hand_position()
     {
         return (hand_state_ >= 0 && hand_state_ <= 0.6) && (hand_time_ > 2) && hand_normal_ > 0; 
     }
 
     bool should_pick_object_table() {
-        if(object_in_gripper == false && hand_time_ > 6 && picked_ == false)
+        if(object_in_gripper == false && hand_time_ > 8 && picked_ == false)
         {
             object_in_gripper = true;
             picked_ = true;
@@ -284,11 +288,11 @@ private:
     }
 
     bool should_place_object_table() {
-       // if(object_in_gripper == true && hand_time_ > 6 && (hand_state_ > 0.6 || hand_normal_ < 0))
-        //{
-         //   object_in_gripper = false;
-          //  return true;
-       // }
+        if(object_in_gripper == true && hand_time_ > 6 && (hand_normal_ < 0) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
+        {
+            object_in_gripper = false;
+            return true;
+        }
         return false;
     }
 
@@ -310,6 +314,7 @@ private:
 
     void maintain_current_state() {
         RCLCPP_INFO(this->get_logger(), "Maintaining current state");
+        std::cout << "hand normal: " << hand_normal_ << ", hand state: " << hand_state_ << std::endl;
     }
 };
 
