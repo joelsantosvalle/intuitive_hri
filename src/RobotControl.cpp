@@ -90,7 +90,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false), picked_(false), placed_(false), processing_enabled(true)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false), picked_(false), placed_(false)
     {
         setup_subscribers();
         initialize_commands();
@@ -124,7 +124,6 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     bool picked_, placed_;
     sensor_msgs::msg::JointState joint_states;
-    bool processing_enabled;
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -136,35 +135,29 @@ private:
 
     void setup_subscribers() {
         // Subscriber to hand state
-        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_state", 10, std::bind(&ActionManager::handStateCallback, this, std::placeholders::_1));
+        hand_state_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_state", 1, std::bind(&ActionManager::handStateCallback, this, std::placeholders::_1));
 
         // Subscriber to hand normal
-        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_normal", 10, std::bind(&ActionManager::handNormalCallback, this, std::placeholders::_1));
+        hand_normal_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_normal", 1, std::bind(&ActionManager::handNormalCallback, this, std::placeholders::_1));
 
         // Subscriber to hand position
-        robot_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>("robot_position", 10, std::bind(&ActionManager::handPositionCallback, this, std::placeholders::_1));
+        robot_position_sub_ = this->create_subscription<geometry_msgs::msg::Point>("robot_position", 5, std::bind(&ActionManager::handPositionCallback, this, std::placeholders::_1));
 
         // Subscriber to hand time
-        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_time", 10, std::bind(&ActionManager::handTimeCallback, this, std::placeholders::_1));
+        hand_time_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_time", 1, std::bind(&ActionManager::handTimeCallback, this, std::placeholders::_1));
 
         // Subscriber to hand rate of change
-        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>("hand_rate_of_change", 10, std::bind(&ActionManager::handRateOfChangeCallback, this, std::placeholders::_1));
+        hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>("hand_rate_of_change", 5, std::bind(&ActionManager::handRateOfChangeCallback, this, std::placeholders::_1));
 
-        joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&ActionManager::jointStatesCallback, this, std::placeholders::_1));
+        joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&ActionManager::jointStatesCallback, this, std::placeholders::_1));
     }
 
     void handStateCallback(const std_msgs::msg::Float32::SharedPtr msg) {
-        if(processing_enabled)
-        {
             hand_state_ = msg->data;
-        }
     }
 
     void handNormalCallback(const std_msgs::msg::Float32::SharedPtr msg) {
-        if(processing_enabled)
-        {
             hand_normal_ = msg->data;
-        }
     }
 
     void handPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
@@ -205,10 +198,8 @@ private:
     void evaluate_conditions_and_act() {
         if (should_pick_object_table()) {
             ur3_controller_->pick_object_from_table();
-            reset_hand_state();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
-            reset_hand_state();
         } else if (should_turn() && correct_hand_position()) {
             execute_command(command_key, offset);
         } else if (should_approach_human() && correct_hand_position()) {
@@ -219,7 +210,6 @@ private:
             execute_command_joints(command_key);
         } else {
             maintain_current_state();
-            processing_enabled = true;
         }
     }
 
@@ -265,21 +255,14 @@ private:
         }
     }
 
-    void reset_hand_state()
-    {
-        hand_normal_ = 0;
-        hand_time_ = 0;
-        processing_enabled = false;
-    }
-
     bool correct_hand_position()
     {
         return (hand_state_ >= 0 && hand_state_ <= 0.6) && (hand_time_ > 2) && hand_normal_ > 0; 
     }
 
     bool should_pick_object_table() {
-        if(object_in_gripper == false && hand_time_ > 8 && picked_ == false)
-        {
+        if(object_in_gripper == false && hand_time_ > 6 && picked_ == false && hand_normal_ > 0 && hand_state_ == 0)
+        { 
             object_in_gripper = true;
             picked_ = true;
             return true;
@@ -288,9 +271,10 @@ private:
     }
 
     bool should_place_object_table() {
-        if(object_in_gripper == true && hand_time_ > 6 && (hand_normal_ < 0) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
+        if(object_in_gripper == true && hand_time_ > 10 && (hand_normal_ < 0 || hand_state_ == 1) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
         {
             object_in_gripper = false;
+            placed_ = true;
             return true;
         }
         return false;
@@ -314,7 +298,6 @@ private:
 
     void maintain_current_state() {
         RCLCPP_INFO(this->get_logger(), "Maintaining current state");
-        std::cout << "hand normal: " << hand_normal_ << ", hand state: " << hand_state_ << std::endl;
     }
 };
 

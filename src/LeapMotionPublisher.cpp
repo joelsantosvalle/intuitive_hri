@@ -80,7 +80,7 @@ private:
         pub_palm_position_stable_->publish(coordinates);
 
         auto hand_time_in_sensor = std_msgs::msg::Float32();
-        hand_time_in_sensor.data = data[6];
+        hand_time_in_sensor.data = (data[6]/1000000);
         pub_hand_time_in_sensor_->publish(hand_time_in_sensor);
 
         auto palm_direction = std_msgs::msg::Float32();
