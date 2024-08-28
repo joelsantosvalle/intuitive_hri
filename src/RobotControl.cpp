@@ -14,8 +14,6 @@
 #include <thread>
 #include <sensor_msgs/msg/joint_state.hpp>
 
-//add 30 mm from position of gripper  in z and 50 mm along the y
-
 // Command structure to hold position and joint angles, position in meters and orientation in radians
 struct Command {
     geometry_msgs::msg::Vector3 position;  // Dynamic x, y, z values
@@ -90,7 +88,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.75), object_in_gripper(false), picked_(false), placed_(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.85), object_in_gripper(false), picked_(false), placed_(false)
     {
         setup_subscribers();
         initialize_commands();
