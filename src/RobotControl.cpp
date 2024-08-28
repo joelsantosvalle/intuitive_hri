@@ -188,8 +188,6 @@ private:
         command_map_["righttop"] = {0.5, -1.0, 0.5};
         command_map_["rightcenter"] = {0.0, -1.57, 0.5};
         command_map_["rightbottom"] = {0.5, -1.57, 0.5};
-        command_map_["center"] = {0.5, -1.0, 1.0};
-        command_map_["centertop"] = {0.0, -1.57, 1.0};
         command_map_["home"] = {0.0, -1.57, 0.0, -1.57, 0.0, 0.0};
         command_map_["approachpose"] = {-1.07, -0.747, 0.67, -1.56, -1.51, 0.62};
         command_map_["pickuppose"] = {-1.0492, -0.586, 0.685, -1.614, -1.506, 0.495};
@@ -261,7 +259,7 @@ private:
     }
 
     bool should_pick_object_table() {
-        if(object_in_gripper == false && hand_time_ > 6 && picked_ == false && hand_normal_ > 0 && hand_state_ == 0)
+        if(object_in_gripper == false && hand_time_ > 6 && hand_normal_ > 0 && hand_state_ == 0)
         { 
             object_in_gripper = true;
             picked_ = true;

@@ -117,7 +117,6 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
         usleep(5000);
     }
 
-    // If the focused hand was not found in the frame, switch focus to another hand if available
     if (handnummer == 0) {
 
         float bytes[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
