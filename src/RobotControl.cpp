@@ -68,13 +68,19 @@ public:
 
     void execute_command(Command command) {
         std_msgs::msg::String msg;
-        msg.data = " movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=1.2, v=0.25, r=0.01)"; 
+        msg.data = "def my_prog():     movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
     }
 
     void execute_command_joints(CommandJoints command) {
         std_msgs::msg::String msg;
-        msg.data = " movej(p["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=1.2, v=0.25, r=0.01)"; 
+        msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
+        script_command_pub_->publish(msg);
+    }
+
+    void execute_multiple_command_joints(const std::vector<CommandJoints>& commands) {
+        std_msgs::msg::String msg;
+        msg.data = "def my_prog():     movej(["  + std::to_string(commands[0].joint_angles[0]) +"," +std::to_string(commands[0].joint_angles[1])+"," +std::to_string(commands[0].joint_angles[2])+"," +std::to_string(commands[0].joint_angles[3])+"," +std::to_string(commands[0].joint_angles[4])+","+ std::to_string(commands[0].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)" + " movej(["  + std::to_string(commands[1].joint_angles[0]) +"," +std::to_string(commands[1].joint_angles[1])+"," +std::to_string(commands[1].joint_angles[2])+"," +std::to_string(commands[1].joint_angles[3])+"," +std::to_string(commands[1].joint_angles[4])+","+ std::to_string(commands[1].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)" + " movej(["  + std::to_string(commands[2].joint_angles[0]) +"," +std::to_string(commands[2].joint_angles[1])+"," +std::to_string(commands[2].joint_angles[2])+"," +std::to_string(commands[2].joint_angles[3])+"," +std::to_string(commands[2].joint_angles[4])+","+ std::to_string(commands[2].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
     }
 
@@ -88,7 +94,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.85), object_in_gripper(false), picked_(false), placed_(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.65), object_in_gripper(false), picked_(false), placed_(false), approach(false)
     {
         setup_subscribers();
         initialize_commands();
@@ -109,6 +115,7 @@ public:
 
 private:
     std::map<std::string, std::vector<double>> command_map_;
+    std::map<std::string, std::vector<double>> command_map_angles;
     std::shared_ptr<UR3Controller> ur3_controller_;
     std::string command_key;
     float hand_state_;
@@ -122,6 +129,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     bool picked_, placed_;
     sensor_msgs::msg::JointState joint_states;
+    bool approach;
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -176,12 +184,10 @@ private:
 
     void initialize_commands() {
         // Initialize the command map with predefined joint angles for each command
-        command_map_["left"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
         command_map_["leftapproach"] = {0.0, -1.57, 1.0, 0.0, 0.0, 0.0};
         command_map_["lefttop"] = {0.5, -1.0, 1.5};
         command_map_["leftcenter"] = {0.0, -1.0, 1.0};
         command_map_["leftbottom"] = {0.5, -1.57, 1.0};
-        command_map_["right"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
         command_map_["rightapproach"] = {0.0, -1.57, 0.5, 0.0, 0.0, 0.0};
         command_map_["righttop"] = {0.5, -1.0, 0.5};
         command_map_["rightcenter"] = {0.0, -1.57, 0.5};
@@ -196,15 +202,11 @@ private:
             ur3_controller_->pick_object_from_table();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
-        } else if (should_turn() && correct_hand_position()) {
-            execute_command(command_key, offset);
         } else if (should_approach_human() && correct_hand_position()) {
-            execute_command(command_key, 0.45);
+            execute_command_joints(command_key);
         } else if (should_place_object_operator() && correct_hand_position()) {
             execute_command(command_key, offset);
-        } else if (should_change_position() && correct_hand_position()) {
-            execute_command_joints(command_key);
-        } else {
+        }  else {
             maintain_current_state();
         }
     }
@@ -251,6 +253,19 @@ private:
         }
     }
 
+    void execute_multiple_command_joints(std::vector<std::string> command_key) {
+        std::vector<CommandJoints> command_joints;
+        for(int i = 0; i < command_key.size(); i++)
+        {
+            auto command_it = command_map_.find(command_key[i]);
+            
+            if (command_it != command_map_.end()) {
+                command_joints.push_back(command_it->second);
+            } 
+        }    
+        ur3_controller_->execute_command_joints(command_joints);
+    }
+
     bool correct_hand_position()
     {
         return (hand_state_ >= 0 && hand_state_ <= 0.6) && (hand_time_ > 2) && hand_normal_ > 0; 
@@ -267,7 +282,7 @@ private:
     }
 
     bool should_place_object_table() {
-        if(object_in_gripper == true && hand_time_ > 10 && (hand_normal_ < 0 || hand_state_ == 1) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
+        if(object_in_gripper == true && hand_time_ > 8 && (hand_normal_ < 0 || hand_state_ == 1) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
         {
             object_in_gripper = false;
             placed_ = true;
@@ -282,14 +297,6 @@ private:
 
     bool should_place_object_operator(){
         return false;
-    }
-
-    bool should_change_position(){
-        return false; 
-    }
-
-    bool should_turn(){
-        return false; 
     }
 
     void maintain_current_state() {
