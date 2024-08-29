@@ -70,14 +70,14 @@ public:
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=0.08, v=0.125, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(6));
+        rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
     void execute_command_joints(CommandJoints command) {
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(6));
+        rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
     void execute_multiple_command_joints(std::vector<CommandJoints> commands) {
@@ -85,7 +85,7 @@ public:
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(["  + std::to_string(commands[0].joint_angles[0]) +"," + std::to_string(commands[0].joint_angles[1])+"," +std::to_string(commands[0].joint_angles[2])+"," +std::to_string(commands[0].joint_angles[3])+"," +std::to_string(commands[0].joint_angles[4])+","+ std::to_string(commands[0].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)" + " movej(["  + std::to_string(commands[1].joint_angles[0]) +"," +std::to_string(commands[1].joint_angles[1])+"," +std::to_string(commands[1].joint_angles[2])+"," +std::to_string(commands[1].joint_angles[3])+"," +std::to_string(commands[1].joint_angles[4])+","+ std::to_string(commands[1].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)" +  " movej(["  + std::to_string(commands[2].joint_angles[0]) +"," +std::to_string(commands[2].joint_angles[1])+"," +std::to_string(commands[2].joint_angles[2])+"," +std::to_string(commands[2].joint_angles[3])+"," +std::to_string(commands[2].joint_angles[4])+","+ std::to_string(commands[2].joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(6));
+        rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
 private:
@@ -98,7 +98,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.65), object_in_gripper(false), picked_(false), placed_(false), approach(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.65), object_in_gripper(false), picked_(false), placed_(false), approach(false), moving(false)
     {
         setup_subscribers();
         initialize_commands();
@@ -136,6 +136,8 @@ private:
     std::vector<std::string> command_key_vec;
     float old_hand_time;
     std::string location;
+    bool moving;
+
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -190,7 +192,7 @@ private:
 
     void initialize_commands() {
         // Initialize the command map with predefined joint angles for each command
-        command_map_["leftapproach"] = {-1.588, -1.25, -0.98, -1.04, 1.58, 6.27};
+        command_map_["leftapproach"] = {-1.588, -1.25, -0.98, -1.04, 1.58, 0};
         command_map_["lefttop"] = {-1.66, -1.08, -1.48, -0.65, 1.65, 0};
         command_map_["leftcenter"] = {-1.71, -1.204, -2.08, 0.13, 1.76, 0};
         command_map_["leftbottom"] = {-1.60, -1.23, -1.72, -0.91, 1.61, 6.23};
@@ -209,15 +211,17 @@ private:
             ur3_controller_->pick_object_from_table();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
-        } else if (should_approach_human() && correct_hand_position()) {
+        } else if (should_approach_human() && correct_hand_position() && !moving) {
             execute_multiple_command_joints(command_key_vec);
-        } else if (should_place_object_operator() && correct_hand_position()) {
+            moving = true;
+        } else if (should_place_object_operator() && correct_hand_position() && moving) {
             execute_command(command_key, offset);
             placed_ = true;
-        }  else if (picked_ && placed_) {
+        }  else if (picked_ && placed_ && moving) {
             execute_command_joints(command_key);
             picked_ = false;
             placed_ = false;
+            moving = false;
         } else {
             maintain_current_state();
         }
@@ -254,7 +258,7 @@ private:
     // Function to execute command using joint angles
     void execute_command_joints(std::string command_key) {
         // Find the command in the map
-        auto command_it = command_map_.find(command_key);
+        auto command_it = command_map_.find("home");
         
         if (command_it != command_map_.end()) {
             CommandJoints command_joints;
@@ -279,6 +283,9 @@ private:
                 std::cout << "after pushing back\n"; 
             } 
         }    
+        std::cout << command_joints[0].joint_angles[0]<<"\n";
+        std::cout << command_joints[0].joint_angles[1]<<"\n";
+        std::cout << command_joints[0].joint_angles[2]<<"\n";
         std::cout << "commanding ur\n";
         ur3_controller_->execute_multiple_command_joints(command_joints);
     }
@@ -309,30 +316,30 @@ private:
     }
 
     bool should_approach_human() {
-        command_key_vec[0] == "home";
-        old_hand_time = hand_time_;
+        command_key_vec[0] = "home";
         std::cout << "about to approach human\n";
         if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 8 && robot_position_.x < 0)
         {
+            old_hand_time = hand_time_;
             location = "left";
-            command_key_vec[1] == "leftapproach";
+            command_key_vec[1] = "leftapproach";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
                 std::cout << "left top...\n";
-                command_key_vec[2] == "lefttop";
+                command_key_vec[2] = "lefttop";
                 approach = true;
                 return true;
             }
             else if(robot_position_.z >= 0.21 && robot_position_.z < 0.31)
             {
-                command_key_vec[2] == "leftcenter";
+                command_key_vec[2] = "leftcenter";
                 approach = true;
                 std::cout << "leftcenter...\n";
                 return true;
             }
             else if(robot_position_.z >= 0.05 && robot_position_.z < 0.21)
             {
-                command_key_vec[2] == "leftbottom";
+                command_key_vec[2] = "leftbottom";
                 approach = true;
                 std::cout << "left bottom...\n";
                 return true;
@@ -344,25 +351,26 @@ private:
         }
         else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 10 && robot_position_.x > 0)
         {
+            old_hand_time = hand_time_;
             location = "right";
-            command_key_vec[1] == "rightapproach";
+            command_key_vec[1] = "rightapproach";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
                 std::cout << "right top...\n";
-                command_key_vec[2] == "righttop";
+                command_key_vec[2] = "righttop";
                 approach = true;
                 return true;
             }
             else if(robot_position_.z >= 0.21 && robot_position_.z < 0.31)
             {
-                command_key_vec[2] == "rightcenter";
+                command_key_vec[2] = "rightcenter";
                 std::cout << "right center...\n";
                 approach = true;
                 return true;
             }
             else if(robot_position_.z >= 0.05 && robot_position_.z < 0.21)
             {
-                command_key_vec[2] == "rightbottom";
+                command_key_vec[2] = "rightbottom";
                 approach = true;
                 std::cout << "right bottom...\n";
                 return true;
@@ -376,21 +384,26 @@ private:
     }
 
     bool should_place_object_operator(){
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > (old_hand_time + 6)) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)))
+        std::cout << "angles settings...\n";
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > (old_hand_time + 4)) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)))
         {
+            std::cout << "inside if angle settings...\n";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
-                command_key == "topangles";
+                command_key = "topangles";
+                std::cout << "topangles...\n";
                 return true;
             }
             else if(robot_position_.z >= 0.21 && robot_position_.z < 0.31)
             {
-                command_key == "centerangles";
+                command_key = "centerangles";
+                std::cout << "centerangles...\n";
                 return true;
             }
             else if(robot_position_.z >= 0.05 && robot_position_.z < 0.21)
             {
-                command_key == "bottomangles";
+                command_key = "bottomangles";
+                std::cout << "bottomangles...\n";
                 return true;
             }
         }
