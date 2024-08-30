@@ -70,7 +70,7 @@ private:
     {
         // Update the pose message with the position
         robot_pose_.x = msg->x;
-        robot_pose_.y = (-1*(msg->z)) - 0.38;
+        robot_pose_.y = ((-1*(msg->z)) - 0.38 - 0.05);
         robot_pose_.z = msg->y;
 
         // Publish the updated pose

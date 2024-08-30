@@ -68,20 +68,21 @@ public:
 
     void execute_command(Command command) {
         std_msgs::msg::String msg;
-        msg.data = "def my_prog():     movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=0.1, v=0.2, r=0.01)\nend"; 
+        msg.data = "def my_prog():     movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=0.1, v=0.2, r=0)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(10));
+        rclcpp::sleep_for(std::chrono::seconds(12));
     }
 
     void execute_home_pose() {
         std_msgs::msg::String msg;
-        msg.data = "def my_prog():     movej(["  + std::to_string(0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=0.12, v=0.25, r=0.01) "+ " textmsg(\"motion finished\") " +" \nend"; 
+        msg.data = "movej([0, -1.571, 0, -1.571, 0, 0], a=0.12, v=0.25, r=0)"; 
         script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(14));
     }
 
     void execute_command_joints(CommandJoints command) {
         std_msgs::msg::String msg;
-        msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
+        msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.12, v=0.25, r=0)\nend"; 
         script_command_pub_->publish(msg);
         rclcpp::sleep_for(std::chrono::seconds(8));
     }
@@ -103,7 +104,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.065), object_in_gripper(false), picked_(false), placed_(false), approach(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.06), object_in_gripper(false), picked_(false), placed_(false), approach(false), moving(false)
     {
         setup_subscribers();
         initialize_commands();
@@ -116,6 +117,7 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         std::cout << "Opening gripper...\n" << std::endl ;
         gripper.setGripperPosition(0x00);
+        ur3_controller_->execute_home_pose();
          
         // Set up a timer to periodically call evaluate_conditions_and_act
         timer_ = this->create_wall_timer(
@@ -142,6 +144,9 @@ private:
     std::vector<std::string> command_key_vec;
     std::string location;
     std::string last_location;
+    float old_hand_id;
+    float hand_id_;
+    bool moving;
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -150,6 +155,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_time_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr hand_rate_of_change_sub_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_id_sub_;
 
     void setup_subscribers() {
         // Subscriber to hand state
@@ -168,6 +174,8 @@ private:
         hand_rate_of_change_sub_ = this->create_subscription<geometry_msgs::msg::Point>("hand_rate_of_change", 5, std::bind(&ActionManager::handRateOfChangeCallback, this, std::placeholders::_1));
 
         joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(&ActionManager::jointStatesCallback, this, std::placeholders::_1));
+
+        hand_id_sub_ = this->create_subscription<std_msgs::msg::Float32>("hand_id", 1, std::bind(&ActionManager::handidCallback, this, std::placeholders::_1));
     }
 
     void handStateCallback(const std_msgs::msg::Float32::SharedPtr msg) {
@@ -194,12 +202,16 @@ private:
         joint_states = *msg;
     }
 
+    void handidCallback(const std_msgs::msg::Float32::SharedPtr msg) {
+        hand_id_ = msg->data;
+    }
+
     void initialize_commands() {
         // Initialize the command map with predefined joint angles for each command
         command_map_["leftapproach"] = {-1.588, -1.25, -0.98, -1.04, 1.58, 0};
         command_map_["lefttop"] = {-1.66, -1.08, -1.48, -0.65, 1.65, 0};
         command_map_["leftcenter"] = {-1.71, -1.204, -2.08, 0.13, 1.76, 0};
-        command_map_["leftbottom"] = {-1.60, -1.23, -1.72, -0.91, 1.61, 6.23};
+        command_map_["leftbottom"] = {-1.60, -1.23, -1.72, -0.91, 1.61, 0};
         command_map_["topangles"] = {1.235, -1.156, 1.136};
         command_map_["centerangles"] = {1.223, -1.055, 1.219};
         command_map_["bottomangles"] = {1.760, -1.541, 0.800};
@@ -211,28 +223,26 @@ private:
     }
 
     void evaluate_conditions_and_act() {
-        if (should_pick_object_table()) {
+        if (should_pick_object_table() && (hand_id_ != old_hand_id)) {
             ur3_controller_->pick_object_from_table();
-        } else if (should_place_object_table()) {
+        } else if (should_place_object_table() && (hand_id_ != old_hand_id)) {
             ur3_controller_->drop_object_to_table();
-        } else if (should_approach_human() && correct_hand_position() && picked_) {
+        } else if (should_approach_human() && correct_hand_position() && picked_ && (hand_id_ != old_hand_id)) {
             if((joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56) || ((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
             {
-                 execute_multiple_command_joints(command_key_vec);
+                 execute_command_joints(command_key_vec[2]);
                  old_robot_position_.x = robot_position_.x;
                  old_robot_position_.y = robot_position_.y;
                  old_robot_position_.z = robot_position_.z;
                  last_location = (robot_position_.x > 0)? "right" : "left";
             }
-            if (should_place_object_operator() && correct_hand_position()) {
+            if (should_place_object_operator() && correct_hand_position() && picked_) {
                 execute_command(command_key, offset);
                 std::cout << "Opening gripper...\n" << std::endl ;
                 gripper.setGripperPosition(0x00);
-                rclcpp::sleep_for(std::chrono::seconds(1));
+                rclcpp::sleep_for(std::chrono::seconds(4));
                 placed_ = true;
                 object_in_gripper = false;
-                command_key = "home";
-                execute_command_joints(command_key);
             }
         }  else {
             RCLCPP_INFO(this->get_logger(), "Maintaining current state");
@@ -241,6 +251,8 @@ private:
         if (picked_ && placed_) {
             picked_ = false;
             placed_ = false;
+            ur3_controller_->execute_home_pose();
+            hand_id_ = old_hand_id;
         } 
     }
 
@@ -338,7 +350,7 @@ private:
     bool should_approach_human() {
         command_key_vec[0] = "home";
         std::cout << "about to approach human\n";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 6 && robot_position_.x < 0)
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 7 && robot_position_.x < 0)
         {
             location = "left";
             command_key_vec[1] = "leftapproach";
@@ -368,7 +380,7 @@ private:
                 return false;
             }
         }
-        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 6 && robot_position_.x > 0)
+        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 7 && robot_position_.x > 0)
         {
             location = "right";
             command_key_vec[1] = "rightapproach";
@@ -403,7 +415,7 @@ private:
 
     bool should_place_object_operator(){
         std::cout << "angles settings...\n";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 6) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 10 && hand_rate_of_change_.x >= -10 && hand_rate_of_change_.y <= 10 && hand_rate_of_change_.y >= -10 && hand_rate_of_change_.z <= 10 && hand_rate_of_change_.z >= -10))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 9) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 10 && hand_rate_of_change_.x >= -10 && hand_rate_of_change_.y <= 10 && hand_rate_of_change_.y >= -10 && hand_rate_of_change_.z <= 10 && hand_rate_of_change_.z >= -10))
         {
             std::cout << "inside if angle settings...\n";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
@@ -425,7 +437,7 @@ private:
                 return true;
             }
         }
-        //approach = false;
+        approach = false;
         return false;
     }
 };
