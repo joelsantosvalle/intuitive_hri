@@ -73,6 +73,13 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
+    void execute_home_pose() {
+        std_msgs::msg::String msg;
+        msg.data = "def my_prog():     movej(["  + std::to_string(0.0) +"," +std::to_string(-1.57)+"," +std::to_string(0)+"," +std::to_string(-1.57)+"," +std::to_string(0)+","+ std::to_string(0) + "], a=0.12, v=0.25, r=0.01)\nend"; 
+        script_command_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::seconds(8));
+    }
+
     void execute_command_joints(CommandJoints command) {
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.12, v=0.25, r=0.01)\nend"; 
@@ -98,7 +105,7 @@ private:
 class ActionManager : public rclcpp::Node
 {
 public:
-    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.65), object_in_gripper(false), picked_(false), placed_(false), approach(false), moving(false)
+    ActionManager() : Node("ActionManager"),ur3_controller_(new UR3Controller(this)) ,command_key(" "), offset(0.65), object_in_gripper(false), picked_(false), placed_(false), approach(false)
     {
         setup_subscribers();
         initialize_commands();
@@ -125,6 +132,7 @@ private:
     float hand_state_;
     float hand_normal_;
     geometry_msgs::msg::Point robot_position_;
+    geometry_msgs::msg::Point old_robot_position_;
     float hand_time_;
     geometry_msgs::msg::Point hand_rate_of_change_;
     float offset;
@@ -134,10 +142,8 @@ private:
     sensor_msgs::msg::JointState joint_states;
     bool approach;
     std::vector<std::string> command_key_vec;
-    float old_hand_time;
     std::string location;
-    bool moving;
-
+    std::string last_location;
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -211,19 +217,29 @@ private:
             ur3_controller_->pick_object_from_table();
         } else if (should_place_object_table()) {
             ur3_controller_->drop_object_to_table();
-        } else if (should_approach_human() && correct_hand_position() && !moving) {
-            execute_multiple_command_joints(command_key_vec);
-            moving = true;
-        } else if (should_place_object_operator() && correct_hand_position() && moving) {
+        } else if (should_approach_human() && correct_hand_position()) {
+            if((joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56) || ((robot_position_.x > old_robot_position_ && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_ && robot_position_.x < 0 && last_location == "right")))
+            {
+                 execute_multiple_command_joints(command_key_vec);
+                 old_robot_position_.x = robot_position_.x;
+                 old_robot_position_.y = robot_position_.y;
+                 old_robot_position_.z = robot_position_.z;
+                 last_location = (robot_position_ > 0)? "right" : "left"
+            }
+            //else if()
+            //{
+            //    execute_command_joints(command_key_vec[2]);
+            //}
+        } else if (should_place_object_operator() && correct_hand_position()) {
             execute_command(command_key, offset);
             placed_ = true;
-        }  else if (picked_ && placed_ && moving) {
-            execute_command_joints(command_key);
+            object_in_gripper = false;
+        }  else if (picked_ && placed_) {
+            ur3_controller_->execute_home_pose();
             picked_ = false;
             placed_ = false;
-            moving = false;
         } else {
-            maintain_current_state();
+            RCLCPP_INFO(this->get_logger(), "Maintaining current state");
         }
     }
 
@@ -258,7 +274,7 @@ private:
     // Function to execute command using joint angles
     void execute_command_joints(std::string command_key) {
         // Find the command in the map
-        auto command_it = command_map_.find("home");
+        auto command_it = command_map_.find(command_key);
         
         if (command_it != command_map_.end()) {
             CommandJoints command_joints;
@@ -283,9 +299,6 @@ private:
                 std::cout << "after pushing back\n"; 
             } 
         }    
-        std::cout << command_joints[0].joint_angles[0]<<"\n";
-        std::cout << command_joints[0].joint_angles[1]<<"\n";
-        std::cout << command_joints[0].joint_angles[2]<<"\n";
         std::cout << "commanding ur\n";
         ur3_controller_->execute_multiple_command_joints(command_joints);
     }
@@ -318,9 +331,8 @@ private:
     bool should_approach_human() {
         command_key_vec[0] = "home";
         std::cout << "about to approach human\n";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 8 && robot_position_.x < 0)
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 6 && robot_position_.x < 0)
         {
-            old_hand_time = hand_time_;
             location = "left";
             command_key_vec[1] = "leftapproach";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
@@ -349,9 +361,8 @@ private:
                 return false;
             }
         }
-        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 10 && robot_position_.x > 0)
+        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 6 && robot_position_.x > 0)
         {
-            old_hand_time = hand_time_;
             location = "right";
             command_key_vec[1] = "rightapproach";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
@@ -385,7 +396,7 @@ private:
 
     bool should_place_object_operator(){
         std::cout << "angles settings...\n";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > (old_hand_time + 4)) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 8) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 5 && hand_rate_of_change_.x >= -5 && hand_rate_of_change_.y <= 5 && hand_rate_of_change_.y >= -5 && hand_rate_of_change_.z <= 5 && hand_rate_of_change_.z >= -5))
         {
             std::cout << "inside if angle settings...\n";
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
@@ -409,10 +420,6 @@ private:
         }
         approach = false;
         return false;
-    }
-
-    void maintain_current_state() {
-        RCLCPP_INFO(this->get_logger(), "Maintaining current state");
     }
 };
 
