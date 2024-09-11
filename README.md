@@ -45,7 +45,7 @@ ultraleap-hand-tracking-control-panel
 #### Turn on the robot via the the UR control panel
 2. After the robot has boot up, on the right corner change the local mode to remote control
 
-#### Starting the ur3 robot driver
+#### Starting the ur3 robot driver. Also, keep in mind that everytime you change the robot from local to remote or remote to loca the driver has to be restarted.
 3. Open a terminal and type:
 ```sh
 ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur3e robot_ip:=192.168.1.102 headless_mode:=true
