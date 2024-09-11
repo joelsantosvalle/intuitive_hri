@@ -13,12 +13,4 @@
         exec="SensorToRobotPosition"
         name="SensorToRobotPosition"
         output="screen" />
-
-    <!-- Launch the C++ robot control executable -->
-    <node
-        pkg="intuitive_hri"
-        exec="RobotControl"
-        name="RobotControl"
-        output="screen" />
-
 </launch>
