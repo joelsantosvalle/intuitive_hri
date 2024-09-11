@@ -73,7 +73,7 @@ ros2 launch intuitive_hri leap_robot_control.launch
 6. Open a new terminal, source it and type the following:
 ```sh
 cd ~/catkin_ws
-ros2 run intuitive_hri RobotControl.launch
+ros2 run intuitive_hri RobotControl
 ```
 7. If you want the robot to pick up an object press enter, if the robot is holding the object and you want to drop it you can press enter again, if the robot is holding the object and you want to get it just place your hand under the sensor and the robot will approach you.
 
