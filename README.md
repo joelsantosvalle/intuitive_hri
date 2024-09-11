@@ -5,7 +5,7 @@
 
 |Platform|ROS Release|
 |-|------|
-|[Ubuntu 20.04](https://releases.ubuntu.com/20.04/)|[ROS2 Humble](https://docs.ros.org/en/humble/Installation.html)|
+|[Ubuntu 22.04](https://releases.ubuntu.com/20.04/)|[ROS2 Humble](https://docs.ros.org/en/humble/Installation.html)|
 
 ### Requirements: 
 
