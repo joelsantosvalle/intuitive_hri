@@ -69,6 +69,13 @@ gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-han
 cd ~/catkin_ws
 ros2 launch intuitive_hri leap_robot_control.launch
 ```
+#### Controlling the robot
+6. Open a new terminal, source it and type the following:
+```sh
+cd ~/catkin_ws
+ros2 run intuitive_hri RobotControl.launch
+```
+7. If you want the robot to pick up an object press enter, if the robot is holding the object and you want to drop it you can press enter again, if the robot is holding the object and you want to get it just place your hand under the sensor and the robot will approach you.
 
 ### Example Video
 If all the previous steps were followed correctly and carefully you should be able to see the [following.](https://youtu.be/oda8lf_sLHQ)
