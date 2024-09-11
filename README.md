@@ -62,4 +62,9 @@ roslaunch human_robot_interaction leap_ros_industrial.launch
 cd ~/catkin_ws
 roslaunch interbotix_xsarm_control xsarm_control.launch robot_model:=rx150 
 ```
-#### Controlling the robot
+### Example Video
+If all the previous steps were followed correctly and carefully you should be able to see the following. (Click on the image below)
+
+[![Watch the video](images/ur.HEIC)](https://youtu.be/oda8lf_sLHQ)
+
+
