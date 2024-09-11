@@ -1,0 +1,24 @@
+<!-- Launch file to start the leap motion ros publisher, sensor coordinate transormation, and robot control node-->
+<launch>
+    <!-- Launch the C++ leap motion ros publisher executable -->
+    <node
+        pkg="intuitive_hri"
+        exec="LeapMotionPublisher"
+        name="LeapMotionPublisher"
+        output="screen" />
+    
+    <!-- Launch the C++ sensor coordinate transformation executable -->
+    <node
+        pkg="intuitive_hri"
+        exec="SensorToRobotPosition"
+        name="SensorToRobotPosition"
+        output="screen" />
+
+    <!-- Launch the C++ robot control executable -->
+    <node
+        pkg="intuitive_hri"
+        exec="RobotControl"
+        name="RobotControl"
+        output="screen" />
+
+</launch>

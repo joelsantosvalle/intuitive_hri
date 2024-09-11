@@ -26,7 +26,7 @@ set(SOURCES
     src/SensorToRobotPosition.cpp     
 )
 
-add_executable(LeapMotionPublisher src/LeapMotionPublisher.cpp)
+add_executable(LeapMotionPublisher src/leapmotion_robot_control/LeapMotionPublisher.cpp)
 ament_target_dependencies(LeapMotionPublisher
   rclcpp
   std_msgs
@@ -36,7 +36,7 @@ install(TARGETS LeapMotionPublisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(SensorToRobotPosition src/SensorToRobotPosition.cpp)
+add_executable(SensorToRobotPosition src/leapmotion_robot_control/SensorToRobotPosition.cpp)
 ament_target_dependencies(SensorToRobotPosition
   rclcpp
   std_msgs
@@ -48,7 +48,7 @@ install(TARGETS SensorToRobotPosition
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(RobotControl src/RobotControl.cpp)
+add_executable(RobotControl src/leapmotion_robot_control/RobotControl.cpp)
 
 ament_target_dependencies(RobotControl
   rclcpp

@@ -9,17 +9,13 @@
 
 ### Requirements: 
 
-You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-software-download), and [UR robot driver](https://docs.ros.org/en/rolling/p/ur_robot_driver/installation/toc.html) installed on your device. 
+You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-software-download), and [UR robot driver](https://docs.ros.org/en/rolling/p/ur_robot_driver/installation/toc.html) installed on your device. Additional we recommend that you have [terminator](https://wiki.ubuntuusers.de/Terminator/) installed so you can open multiple terminals in the same window
 
 ## Documentation and Enviornment setup
-For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](). This documentation includes a description of the sensors and the robot arm which were used to develop and test the industrial-like interaction.
+For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](). This documentation includes a description of the hardware which was used to develop and test this software.
 
 ## Current features
-- [Pick up and delivery of an object/piece while hand is being hold inside the sensor working area](/scripts/demonstrator_hold_hand)
-- [Pick up an object once a signal is given to the robot](/scripts/Industrial_like_robot)
-- [Delivery of an object once the a hand is detected again](/scripts/Industrial_like_robot)
-- [Pick up and delivery of differnt objects/pieces placed in different locations]((/scripts/Industrial_like_robot))
-- Determinations of the hands status
+- [Pick up of an object/piece and delivery of this object to the hand operator through information acquired by the leap motion sensor](/src/leapmotion_robotcontrol)
 
 ## Installation of this package
 **1.** Go to the source folder of your catkin workspace.
