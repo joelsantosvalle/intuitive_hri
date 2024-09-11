@@ -41,14 +41,30 @@ If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` and `source /opt/ros
 ```sh
 ultraleap-hand-tracking-control-panel
 ```
+
+#### Turn on the robot via the the UR control panel
+2. After the robot has boot up, on the right corner change the local mode to remote control
+
+#### Starting the ur3 robot driver
+3. Open a terminal and type:
+```sh
+ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur3e robot_ip:=192.168.1.102 headless_mode:=true
+```
+
+#### Starting the gripper driver
+4. Open a terminal and type:
+```sh
+ros2 run ur_robot_driver tool_communication.py --ros-args -p robot_ip:=192.168.1.102 -p device_name:=/tmp/ttyUR
+```
+
 #### Using the Leap Motion sensor
-2. Open a terminal, source it and type the following:
+5. Open a terminal, source it and type the following:
 ```sh
 cd ~/catkin_ws/src/intuitive_hri/src/leapmotion_robot_control/
 gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-hand-tracking-service/libLeapC.so -l LeapC && ./LeapListener 
 ```
 #### Publishing the data extracted from the Leap motion sensor into ROS, transforming sensor to robot coordinates and controlling the robot
-3. Open a new terminal, source it and type the following:
+6. Open a new terminal, source it and type the following:
 ```sh
 cd ~/catkin_ws
 ros2 launch intuitive_hri leap_robot_control.launch
