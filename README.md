@@ -15,7 +15,7 @@ You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-
 For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](). This documentation includes a description of the hardware which was used to develop and test this software.
 
 ## Current features
-[Pick up of an object/piece and delivery of this object to the hand operator through information acquired by the leap motion sensor](/src/leapmotion_robotcontrol)
+[Pick up of an object/piece and delivery of this object to the hand operator through information acquired by the leap motion sensor](/src/leapmotion_robot_control)
 
 ## Installation of this package
 **1.** Go to the source folder of your catkin workspace.
