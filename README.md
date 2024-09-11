@@ -17,51 +17,43 @@ For guidance on installation, development, environmental setup, and troubleshoot
 ## Current features
 [Pick up of an object/piece and delivery of this object to the hand operator through information acquired by the leap motion sensor](/src/leapmotion_robot_control)
 
-## Installation of this package
-**1.** Go to the source folder of your catkin workspace.
+## Installation of this package (it is assumed you already have the all the necessary robot and gripper drivers installed)
+
+**1.** Install the Leap Motion sensor linux drivers with their [guide.](https://docs.ultraleap.com/linux/)
+
+**2.** Go to the source folder of your catkin workspace.
 ```bash 
-cd ~/catkin_ws/src
-git clone https://github.com/Jasv06/human_robot_interaction.git
-cd ~/catkin_ws
-catkin_make
+cd ~/your_catkin_ws/src
+git clone https://github.com/joelsantosvalle/intuitive_hri.git
+cd ~/your_catkin_ws
+colcon build --packages-select intuitive_hri
 ```
-**2.** Source your current catkin workspace.
+**3.** Source your current catkin workspace (Optional in case your workspace is not sourced in your bashrc)
 ```bash 
 source ~/catkin_ws/devel/setup.bash
 ```
-**3.** Extract the LeapMotion folder and place it in your desired location outside your catkin working space.
-
-**4.** Go to the [Leap_client_demonstrator.py](/scripts/demonstrator_hold_hand/Leap_client_demonstrator.py) file and change the path in line 8 based on the location where you placed the folder LeapMotion.
-
-**5.** Go to the [Leap_client_industrial.py](/scripts/Industrial_like_robot/Leap_client_industrial.py) file and change the path in line 8 based on the location where you placed the folder LeapMotion.
-
 ## Running the scripts
-If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` and `source /opt/ros/noetic/setup.bash` to your `.bashrc`, remember to source it when you open a new terminal. Also, in the following example catkin_ws is the name of our workspace, but this could change depending on the name you gave to your workspace.
+If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` and `source /opt/ros/humble/setup.bash` to your `.bashrc`, remember to source it when you open a new terminal. Also, in the following example catkin_ws is the name of our workspace, but this could change depending on the name you gave to your workspace.
 
 ### Example
-#### Connecting the Leap motion sensor
+#### Visualizing the Leap motion sensor (Optinal)
 1. Open a terminal and type:
 ```sh
 ultraleap-hand-tracking-control-panel
 ```
-#### Use the Leap Motion sensor
+#### Using the Leap Motion sensor
 2. Open a terminal, source it and type the following:
 ```sh
-cd ~/catkin_ws/src/human_robot_interaction/scripts/Industrial_like_robot
-python2 Leap_client_industrial.py
+cd ~/catkin_ws/src/intuitive_hri/src/leapmotion_robot_control/
+gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-hand-tracking-service/libLeapC.so -l LeapC && ./LeapListener 
 ```
 #### Publishing the data extracted from the Leap motion sensor into ROS
 3. Open a new terminal, source it and type the following:
 ```sh
 cd ~/catkin_ws
-roslaunch human_robot_interaction leap_ros_industrial.launch
+ros2 launch intuitive_hri leap_robot_control.launch
 ```
-#### Connecting to the Robot
-4. Ensure the Robot is connected correctly, open a new terminal, source it and type the following:
-```sh
-cd ~/catkin_ws
-roslaunch interbotix_xsarm_control xsarm_control.launch robot_model:=rx150 
-```
+
 ### Example Video
 If all the previous steps were followed correctly and carefully you should be able to see the [following.](https://youtu.be/oda8lf_sLHQ)
 
