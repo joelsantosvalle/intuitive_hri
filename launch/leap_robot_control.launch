@@ -1,4 +1,4 @@
-<!-- Launch file to start the leap motion ros publisher, sensor coordinate transormation, and robot control node-->
+<!-- Launch file to start the leap motion ros publisher, sensor coordinate transormation-->
 <launch>
     <!-- Launch the C++ leap motion ros publisher executable -->
     <node
