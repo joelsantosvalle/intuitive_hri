@@ -47,7 +47,7 @@ ultraleap-hand-tracking-control-panel
 cd ~/catkin_ws/src/intuitive_hri/src/leapmotion_robot_control/
 gcc -o LeapListener LeapMotionListener.c -I/usr/include -L/usr/lib/ultraleap-hand-tracking-service/libLeapC.so -l LeapC && ./LeapListener 
 ```
-#### Publishing the data extracted from the Leap motion sensor into ROS
+#### Publishing the data extracted from the Leap motion sensor into ROS, transforming sensor to robot coordinates and controlling the robot
 3. Open a new terminal, source it and type the following:
 ```sh
 cd ~/catkin_ws
