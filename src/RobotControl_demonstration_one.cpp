@@ -89,13 +89,6 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
-    void execute_multiple_command_joints(std::vector<CommandJoints> commands) {
-        std_msgs::msg::String msg;
-        msg.data = "def my_prog():     movej(["  + std::to_string(commands[0].joint_angles[0]) +"," + std::to_string(commands[0].joint_angles[1])+"," +std::to_string(commands[0].joint_angles[2])+"," +std::to_string(commands[0].joint_angles[3])+"," +std::to_string(commands[0].joint_angles[4])+","+ std::to_string(commands[0].joint_angles[5]) + "], a=0.22, v=0.35, r=0.01)" + " movej(["  + std::to_string(commands[1].joint_angles[0]) +"," +std::to_string(commands[1].joint_angles[1])+"," +std::to_string(commands[1].joint_angles[2])+"," +std::to_string(commands[1].joint_angles[3])+"," +std::to_string(commands[1].joint_angles[4])+","+ std::to_string(commands[1].joint_angles[5]) + "], a=0.22, v=0.35, r=0.01)" +  " movej(["  + std::to_string(commands[2].joint_angles[0]) +"," +std::to_string(commands[2].joint_angles[1])+"," +std::to_string(commands[2].joint_angles[2])+"," +std::to_string(commands[2].joint_angles[3])+"," +std::to_string(commands[2].joint_angles[4])+","+ std::to_string(commands[2].joint_angles[5]) + "], a=0.22, v=0.35, r=0.01)\nend"; 
-        script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(12));
-    }
-
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr script_command_pub_;
@@ -263,6 +256,29 @@ private:
                  ur3_controller_->drop_object_to_table();
                  object_in_gripper = false;
             }
+        } else if (correct_hand_position() && picked_ && object_in_gripper) {
+            if(should_approach_human() && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56 && hand_time_ > 1) || ((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
+            {
+                 execute_command_joints(command_key_vec[2]);
+                 old_robot_position_.x = robot_position_.x;
+                 old_robot_position_.y = robot_position_.y;
+                 old_robot_position_.z = robot_position_.z;
+                 last_location = (robot_position_.x > 0)? "right" : "left";
+            }
+            if (should_place_object_operator() && correct_hand_position() && picked_) {
+                execute_command(command_key, offset);
+                gripper.setGripperPosition(0x00);
+                rclcpp::sleep_for(std::chrono::seconds(1));
+                placed_ = true;
+                object_in_gripper = false;
+            }
+        }  
+
+        if (picked_ && placed_) {
+            picked_ = false;
+            placed_ = false;
+            ur3_controller_->execute_home_pose();
+            hand_id_ = old_hand_id;
         } 
     }
 
@@ -308,48 +324,14 @@ private:
         }
     }
 
-    void execute_multiple_command_joints(std::vector<std::string> command_key) {
-        std::vector<CommandJoints> command_joints;
-        for(int i = 0; i < 3; i++)
-        {
-            auto command_it = command_map_.find(command_key[i]);
-            if (command_it != command_map_.end()) {
-                CommandJoints command_joint;
-                command_joint.joint_angles = command_it->second;
-                command_joints.push_back(command_joint);
-            } 
-        }    
-        ur3_controller_->execute_multiple_command_joints(command_joints);
-    }
-
     bool correct_hand_position()
     {
         return (hand_state_ >= 0 && hand_state_ <= 0.6) && (hand_time_ > 2) && hand_normal_ > 0; 
     }
 
-    bool should_pick_object_table() {
-        if(object_in_gripper == false && hand_time_ > 2 && hand_normal_ > 0 && hand_state_ == 0 && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
-        { 
-            object_in_gripper = true;
-            picked_ = true;
-            return true;
-        }
-        return false;
-    }
-
-    bool should_place_object_table() {
-        if(object_in_gripper == true && hand_time_ > 3 && (hand_normal_ < 0 || hand_state_ == 1) && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56))
-        {
-            object_in_gripper = false;
-            picked_ = false;
-            return true;
-        }
-        return false;
-    }
-
     bool should_approach_human() {
         command_key_vec[0] = "home";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 3 && robot_position_.x < 0)
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 1 && robot_position_.x < 0)
         {
             location = "left";
             command_key_vec[1] = "leftapproach";
@@ -375,7 +357,7 @@ private:
                 return false;
             }
         }
-        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 3 && robot_position_.x > 0)
+        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 1 && robot_position_.x > 0)
         {
             location = "right";
             command_key_vec[1] = "rightapproach";
@@ -405,7 +387,7 @@ private:
     }
 
     bool should_place_object_operator(){
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 4) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 10 && hand_rate_of_change_.x >= -10 && hand_rate_of_change_.y <= 10 && hand_rate_of_change_.y >= -10 && hand_rate_of_change_.z <= 10 && hand_rate_of_change_.z >= -10))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 2) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 10 && hand_rate_of_change_.x >= -10 && hand_rate_of_change_.y <= 10 && hand_rate_of_change_.y >= -10 && hand_rate_of_change_.z <= 10 && hand_rate_of_change_.z >= -10))
         {
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
