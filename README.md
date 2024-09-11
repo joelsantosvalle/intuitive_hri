@@ -9,7 +9,7 @@
 
 ### Requirements: 
 
-You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-software-download), [Python 2](https://www.python.org/downloads/release/python-272) and [Python 3](https://www.python.org/downloads/) installed on your device. 
+You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-software-download), and [UR robot driver](https://docs.ros.org/en/rolling/p/ur_robot_driver/installation/toc.html) installed on your device. 
 
 ## Documentation and Enviornment setup
 For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](). This documentation includes a description of the sensors and the robot arm which were used to develop and test the industrial-like interaction.
