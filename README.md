@@ -63,8 +63,6 @@ cd ~/catkin_ws
 roslaunch interbotix_xsarm_control xsarm_control.launch robot_model:=rx150 
 ```
 ### Example Video
-If all the previous steps were followed correctly and carefully you should be able to see the following. (Click on the image below)
-
-[images/ur.jpg](https://youtu.be/oda8lf_sLHQ)
+If all the previous steps were followed correctly and carefully you should be able to see the [following.](https://youtu.be/oda8lf_sLHQ)
 
 
