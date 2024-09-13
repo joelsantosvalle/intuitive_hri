@@ -115,14 +115,14 @@ void on_frame(LeapMotionListener* listener, const LEAP_TRACKING_EVENT* frame) {
 
         sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
         usleep(5000);
-    }
-
+    } 
+    
     if (handnummer == 0) {
 
         float bytes[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
         sendto(listener->udp_socket, bytes, sizeof(bytes), 0, (struct sockaddr*)&listener->address, sizeof(listener->address));
-        usleep(10000);
+        usleep(1000);
     }
 }
 

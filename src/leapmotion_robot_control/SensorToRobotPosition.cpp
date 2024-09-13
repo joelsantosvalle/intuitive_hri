@@ -11,8 +11,8 @@ public:
         : Node("hand_to_robot_converter")
     {
         // Publisher for robot position
-        pub_robot_position_ = this->create_publisher<geometry_msgs::msg::Point>("robot_position", 10);
-        pub_robot_orientation_ = this->create_publisher<geometry_msgs::msg::Vector3>("robot_orientation", 10);
+        pub_robot_position_ = this->create_publisher<geometry_msgs::msg::Point>("robot_position", 1);
+        pub_robot_orientation_ = this->create_publisher<geometry_msgs::msg::Vector3>("robot_orientation", 1);
 
         // Subscriber to hand orientation
         sub_hand_orientation_ = this->create_subscription<geometry_msgs::msg::Quaternion>(
@@ -70,7 +70,7 @@ private:
     {
         // Update the pose message with the position
         robot_pose_.x = msg->x;
-        robot_pose_.y = ((-1*(msg->z)) - 0.38 - 0.05);
+        robot_pose_.y = ((-1*(msg->z)) - 0.38 - 0.02);
         robot_pose_.z = msg->y;
 
         // Publish the updated pose

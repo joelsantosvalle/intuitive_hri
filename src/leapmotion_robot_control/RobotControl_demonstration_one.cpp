@@ -68,11 +68,11 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(8));
     }
 
-    void execute_command(Command command) {
+    void execute_command(Command command, int time) {
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(p["  + std::to_string(command.position.x) +"," +std::to_string(command.position.y)+"," +std::to_string(command.position.z)+"," +std::to_string(command.orientation.x)+"," +std::to_string(command.orientation.y)+","+ std::to_string(command.orientation.z) + "], a=0.2, v=0.3, r=0)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(5));
+        rclcpp::sleep_for(std::chrono::seconds(time));
     }
 
     void execute_home_pose() {
@@ -82,11 +82,11 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(5));
     }
 
-    void execute_command_joints(CommandJoints command) {
+    void execute_command_joints(CommandJoints command, int time) {
         std_msgs::msg::String msg;
         msg.data = "def my_prog():     movej(["  + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) + "], a=0.24, v=0.45, r=0)\nend"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(6));
+        rclcpp::sleep_for(std::chrono::seconds(time));
     }
 
 private:
@@ -261,14 +261,36 @@ private:
         } else if (correct_hand_position() && picked_ && object_in_gripper) {
             if((should_approach_human() && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56 && hand_time_ > 1)) || ((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
             {
-                 execute_command_joints(command_key_vec[2]);
-                 old_robot_position_.x = robot_position_.x;
-                 old_robot_position_.y = robot_position_.y;
-                 old_robot_position_.z = robot_position_.z;
-                 last_location = (robot_position_.x > 0)? "right" : "left";
+                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
+                {
+                    execute_command_joints(command_key_vec[2], 8);
+                    old_robot_position_.x = robot_position_.x;
+                    old_robot_position_.y = robot_position_.y;
+                    old_robot_position_.z = robot_position_.z;
+                    last_location = (robot_position_.x > 0)? "right" : "left";
+                }
+                else
+                {
+                    execute_command_joints(command_key_vec[2], 5);
+                    old_robot_position_.x = robot_position_.x;
+                    old_robot_position_.y = robot_position_.y;
+                    old_robot_position_.z = robot_position_.z;
+                    last_location = (robot_position_.x > 0)? "right" : "left";
+                }
             }
-            if (should_place_object_operator() && correct_hand_position() && picked_) {
-                execute_command(command_key, offset);
+
+            if (should_place_object_operator() && correct_hand_position() && picked_ && !approach_or_drop()) {
+                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
+                {
+                    return;
+                }
+                execute_command(command_key, (offset + 0.012), 1);
+            } else if (should_place_object_operator() && correct_hand_position() && picked_ && approach_or_drop()) {
+                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
+                {
+                    return;
+                }
+                execute_command(command_key, offset, 2);
                 gripper.setGripperPosition(0x00);
                 rclcpp::sleep_for(std::chrono::seconds(1));
                 placed_ = true;
@@ -284,7 +306,7 @@ private:
         } 
     }
 
-    void execute_command(std::string command_key, float offset) {
+    void execute_command(std::string command_key, float offset, int time) {
         // Find the command in the map
         auto command_it = command_map_.find(command_key);
         
@@ -306,21 +328,21 @@ private:
             command_joints.position.z = robot_position_.z + offset;
 
             // Execute the command using the UR3 controller
-            ur3_controller_->execute_command(command_joints);
+            ur3_controller_->execute_command(command_joints, time);
         } else {
             RCLCPP_WARN(this->get_logger(), "Command not found: %s", command_key.c_str());
         }
     }
 
     // Function to execute command using joint angles
-    void execute_command_joints(std::string command_key) {
+    void execute_command_joints(std::string command_key, int time) {
         // Find the command in the map
         auto command_it = command_map_.find(command_key);
         
         if (command_it != command_map_.end()) {
             CommandJoints command_joints;
             command_joints.joint_angles = command_it->second;
-            ur3_controller_->execute_command_joints(command_joints);
+            ur3_controller_->execute_command_joints(command_joints, time);
         } else {
             RCLCPP_WARN(this->get_logger(), "Command not found: %s", command_key.c_str());
         }
@@ -389,7 +411,7 @@ private:
     }
 
     bool should_place_object_operator(){
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 2) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 10 && hand_rate_of_change_.x >= -10 && hand_rate_of_change_.y <= 10 && hand_rate_of_change_.y >= -10 && hand_rate_of_change_.z <= 10 && hand_rate_of_change_.z >= -10))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 2) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)))
         {
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
@@ -409,6 +431,18 @@ private:
         }
         approach = false;
         return false;
+    }
+
+    bool approach_or_drop()
+    {
+        if(hand_rate_of_change_.x != 0 && hand_rate_of_change_.x <= 8 && hand_rate_of_change_.x >= -8 && hand_rate_of_change_.y != 0 && hand_rate_of_change_.y <= 8 && hand_rate_of_change_.y >= -8 && hand_rate_of_change_.z != 0 && hand_rate_of_change_.z <= 8 && hand_rate_of_change_.z >= -8)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 };
 
