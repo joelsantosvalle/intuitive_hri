@@ -26,7 +26,7 @@ set(SOURCES
     src/SensorToRobotPosition.cpp     
 )
 
-add_executable(LeapMotionPublisher src/leapmotion_robot_control/LeapMotionPublisher.cpp)
+add_executable(LeapMotionPublisher src/LeapMotionPublisher.cpp)
 ament_target_dependencies(LeapMotionPublisher
   rclcpp
   std_msgs
@@ -36,7 +36,7 @@ install(TARGETS LeapMotionPublisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(SensorToRobotPosition src/leapmotion_robot_control/SensorToRobotPosition.cpp)
+add_executable(SensorToRobotPosition src/SensorToRobotPosition.cpp)
 ament_target_dependencies(SensorToRobotPosition
   rclcpp
   std_msgs
@@ -48,7 +48,7 @@ install(TARGETS SensorToRobotPosition
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(RobotControl src/leapmotion_robot_control/RobotControl.cpp)
+add_executable(RobotControl src/RobotControl.cpp)
 
 ament_target_dependencies(RobotControl
   rclcpp
@@ -61,6 +61,22 @@ ament_target_dependencies(RobotControl
 )
 
 install(TARGETS RobotControl
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+add_executable(RobotControl_demonstration_one src/RobotControl_demonstration_one.cpp)
+
+ament_target_dependencies(RobotControl_demonstration_one
+  rclcpp
+  std_msgs
+  geometry_msgs
+  tf2
+  tf2_ros
+  ${dependencies} robotiq_driver
+  sensor_msgs
+)
+
+install(TARGETS RobotControl_demonstration_one
   DESTINATION lib/${PROJECT_NAME}
 )
 
