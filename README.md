@@ -12,7 +12,7 @@
 You should have the [Leap Motion SDK](https://developer.leapmotion.com/tracking-software-download), and [UR robot driver](https://docs.ros.org/en/rolling/p/ur_robot_driver/installation/toc.html) installed on your device. Additional we recommend that you have [terminator](https://wiki.ubuntuusers.de/Terminator/) installed so you can open multiple terminals in the same window
 
 ## Documentation and Enviornment setup
-For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](). This documentation includes a description of the hardware which was used to develop and test this software.
+For guidance on installation, development, environmental setup, and troubleshooting, see our [documentation](https://www.overleaf.com/read/qjcyyvfzsgvg#c76dbe). This documentation includes a description of the hardware which was used to develop and test this software.
 
 ## Current features
 [Pick up of an object/piece and delivery of this object to the hand operator through information acquired by the leap motion sensor](/src/leapmotion_robot_control)
