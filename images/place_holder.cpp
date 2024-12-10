@@ -244,59 +244,57 @@ private:
 
     void evaluate_conditions_and_act() {
 
-        // Check if 'Enter' is pressed
         if (kbhit()) {
             char c = getchar();
-            if (c == '\n' && object_in_gripper == false) {
-                ur3_controller_->pick_object_from_table();
-                object_in_gripper = true;
-                picked_ = true;
+            
+            if (c == '\n') {
+                if (!object_in_gripper) {
+                    ur3_controller_->pick_object_from_table();
+                    object_in_gripper = true;
+                    picked_ = true;
+                } else {
+                    ur3_controller_->drop_object_to_table();
+                    object_in_gripper = false;
+                    picked_ = false;
+                }
             }
-            else if(c == '\n' && object_in_gripper == true)
-            {
-                 ur3_controller_->drop_object_to_table();
-                 object_in_gripper = false;
-                 picked_ = false;
-            }
-        } else if (correct_hand_position() && picked_ && object_in_gripper) {
-            if((should_approach_human() && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56 && hand_time_ > 1)) || ((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
-            {
-                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
-                {
+        }
+        
+        // Conditions when the robot is holding an object
+        if (picked_ && object_in_gripper) {
+            
+            // Smoothly approach or move based on hand position and previous movement
+            bool should_move = should_approach_human() && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56 && hand_time_ > 1);
+            
+            // Evaluate if robot needs to move based on previous position and current position
+            if (should_move) {
+                // Check if robot is moving to the left or right and adjust movement accordingly
+                if (robot_position_.x > old_robot_position_.x && robot_position_.x > 0 && last_location == "left") {
                     execute_command_joints(command_key_vec[2], 8);
-                    old_robot_position_.x = robot_position_.x;
-                    old_robot_position_.y = robot_position_.y;
-                    old_robot_position_.z = robot_position_.z;
-                    last_location = (robot_position_.x > 0)? "right" : "left";
-                }
-                else
-                {
+                } else if (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right") {
                     execute_command_joints(command_key_vec[2], 5);
-                    old_robot_position_.x = robot_position_.x;
-                    old_robot_position_.y = robot_position_.y;
-                    old_robot_position_.z = robot_position_.z;
-                    last_location = (robot_position_.x > 0)? "right" : "left";
+                } else {
+                    // General movement when no special condition matches
+                    execute_command_joints(command_key_vec[2], 5);
                 }
+                
+                // Update position for next movement decision
+                old_robot_position_ = robot_position_;
+                last_location = (robot_position_.x > 0) ? "right" : "left";
             }
 
-            if (should_place_object_operator() && correct_hand_position() && picked_ && !approach_or_drop()) {
-                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
-                {
-                    return;
-                }
-                execute_command(command_key, (offset + 0.012), 1);
-            } else if (should_place_object_operator() && correct_hand_position() && picked_ && approach_or_drop()) {
-                if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
-                {
-                    return;
-                }
+            // Placing the object in the correct position (if conditions are met)
+            if (should_place_object_operator() && correct_hand_position() && !approach_or_drop()) {
+                execute_command(command_key, offset + 0.012, 1);
+            } else if (should_place_object_operator() && correct_hand_position() && approach_or_drop()) {
+                // Drop the object and reset gripper state
                 execute_command(command_key, offset, 2);
-                gripper.setGripperPosition(0x00);
-                rclcpp::sleep_for(std::chrono::seconds(1));
+                gripper.setGripperPosition(0x00);  // Release object
+                rclcpp::sleep_for(std::chrono::seconds(1));  // Give time for action
                 placed_ = true;
                 object_in_gripper = false;
             }
-        }  
+        }
 
         if (picked_ && placed_) {
             picked_ = false;
