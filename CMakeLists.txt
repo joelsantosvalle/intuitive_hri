@@ -48,8 +48,8 @@ install(TARGETS SensorToRobotPosition
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(RobotControl src/RobotControl.cpp)
-ament_target_dependencies(RobotControl
+add_executable(RobotControlBasic src/RobotControlBasic.cpp)
+ament_target_dependencies(RobotControlBasic
   rclcpp
   std_msgs
   geometry_msgs
@@ -59,12 +59,12 @@ ament_target_dependencies(RobotControl
   sensor_msgs
 )
 
-install(TARGETS RobotControl
+install(TARGETS RobotControlBasic
   DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(RobotControl_oakd src/RobotControl_oakd.cpp)
-ament_target_dependencies(RobotControl_oakd
+add_executable(RobotControlAdvanced src/RobotControlAdvanced.cpp)
+ament_target_dependencies(RobotControlAdvanced
   rclcpp
   std_msgs
   geometry_msgs
@@ -74,7 +74,7 @@ ament_target_dependencies(RobotControl_oakd
   sensor_msgs
 )
 
-install(TARGETS RobotControl_oakd
+install(TARGETS RobotControlAdvanced
   DESTINATION lib/${PROJECT_NAME}
 )
 
