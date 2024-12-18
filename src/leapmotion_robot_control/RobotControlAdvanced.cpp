@@ -98,9 +98,9 @@ public:
 
     void execute_command_joints_servo(CommandJoints command) {
         std_msgs::msg::String msg;
-        msg.data = "servoj([" + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) +  "], 0, 0, 7, 0.1, 300)"; 
+        msg.data = "servoj([" + std::to_string(command.joint_angles[0]) +"," +std::to_string(command.joint_angles[1])+"," +std::to_string(command.joint_angles[2])+"," +std::to_string(command.joint_angles[3])+"," +std::to_string(command.joint_angles[4])+","+ std::to_string(command.joint_angles[5]) +  "], 0, 0, 6, 0.1, 300)"; 
         script_command_pub_->publish(msg);
-        rclcpp::sleep_for(std::chrono::seconds(7));
+        rclcpp::sleep_for(std::chrono::seconds(6));
     }
 
 private:
@@ -127,7 +127,7 @@ public:
          
         // Set up a timer to periodically call the evaluate_conditions_and_act function
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(5000), 
+            std::chrono::milliseconds(4000), 
             std::bind(&ActionManager::evaluate_conditions_and_act, this));
     }
 
@@ -192,8 +192,9 @@ private:
     }
 
     void handPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
-        robot_position_ = smooth_position(*msg, old_robot_position_, 0.2);  
-        old_robot_position_ = robot_position_;
+        robot_position_ = *msg;
+        //robot_position_ = smooth_position(*msg, old_robot_position_, 0.2);  
+        //old_robot_position_ = robot_position_;
     }
 
     void handTimeCallback(const std_msgs::msg::Float32::SharedPtr msg) {
@@ -297,11 +298,14 @@ private:
                  last_location = (robot_position_.x > 0)? "right" : "left";
             }
 
-        } else if(should_place_object_operator() && correct_hand_position() && picked_ && object_in_gripper)
+        }  
+        
+        if(should_place_object_operator() && correct_hand_position() && picked_ && object_in_gripper)
         {
             execute_command(command_key, offset);
             if(hand_rate_of_change_.x <= 8 && hand_rate_of_change_.x >= -8 && hand_rate_of_change_.y <= 8 && hand_rate_of_change_.y >= -8 && hand_rate_of_change_.z <= 8 && hand_rate_of_change_.z >= -8)
             {
+                rclcpp::sleep_for(std::chrono::seconds(2));
                 gripper.setGripperPosition(0x00);
                 rclcpp::sleep_for(std::chrono::seconds(1));
                 placed_ = true;
@@ -324,7 +328,7 @@ private:
 
     bool should_approach_human() {
         command_key_vec[0] = "home";
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 2 && robot_position_.x < 0)
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 1 && robot_position_.x < 0)
         {
             location = "left";
             command_key_vec[1] = "leftapproach";
@@ -350,7 +354,7 @@ private:
                 return false;
             }
         }
-        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 2 && robot_position_.x > 0)
+        else if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && placed_ == false && hand_time_ > 1 && robot_position_.x > 0)
         {
             location = "right";
             command_key_vec[1] = "rightapproach";
@@ -380,7 +384,7 @@ private:
     }
 
     bool should_place_object_operator(){
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 3) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 25 && hand_rate_of_change_.x >= -25 && hand_rate_of_change_.y <= 25 && hand_rate_of_change_.y >= -25 && hand_rate_of_change_.z <= 25 && hand_rate_of_change_.z >= -25))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 3) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 18 && hand_rate_of_change_.x >= -18 && hand_rate_of_change_.y <= 18 && hand_rate_of_change_.y >= -18 && hand_rate_of_change_.z <= 18 && hand_rate_of_change_.z >= -18))
         {
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
