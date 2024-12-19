@@ -127,7 +127,7 @@ public:
          
         // Set up a timer to periodically call the evaluate_conditions_and_act function
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(4000), 
+            std::chrono::milliseconds(3000), 
             std::bind(&ActionManager::evaluate_conditions_and_act, this));
     }
 
@@ -152,6 +152,7 @@ private:
     std::string last_location;
     float old_hand_id;
     float hand_id_;
+    
     
      // Subscribers
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr hand_state_sub_;
@@ -193,8 +194,6 @@ private:
 
     void handPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg) {
         robot_position_ = *msg;
-        //robot_position_ = smooth_position(*msg, old_robot_position_, 0.2);  
-        //old_robot_position_ = robot_position_;
     }
 
     void handTimeCallback(const std_msgs::msg::Float32::SharedPtr msg) {
@@ -311,6 +310,10 @@ private:
                 placed_ = true;
                 object_in_gripper = false;
             }
+            else
+            {
+                return;
+            }
         } 
 
         if (picked_ && placed_) {
@@ -384,7 +387,7 @@ private:
     }
 
     bool should_place_object_operator(){
-        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 3) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 18 && hand_rate_of_change_.x >= -18 && hand_rate_of_change_.y <= 18 && hand_rate_of_change_.y >= -18 && hand_rate_of_change_.z <= 18 && hand_rate_of_change_.z >= -18))
+        if(hand_normal_ > 0 && hand_state_ == 0 && object_in_gripper == true && (hand_time_ > 3) && approach && ((location == "left" && robot_position_.x < 0) || (location == "right" && robot_position_.x > 0)) && (hand_rate_of_change_.x <= 18 && hand_rate_of_change_.x >= -18 && hand_rate_of_change_.y <= 18 && hand_rate_of_change_.y >= -18 && hand_rate_of_change_.z <= 25 && hand_rate_of_change_.z >= -25))
         {
             if(robot_position_.z >= 0.31 && robot_position_.z < 0.51)
             {
