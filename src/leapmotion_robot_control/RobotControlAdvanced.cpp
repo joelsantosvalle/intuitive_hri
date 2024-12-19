@@ -290,6 +290,10 @@ private:
         if (correct_hand_position() && picked_ && object_in_gripper) {
             if((should_approach_human() && (joint_states.position[0] > -1.59 && joint_states.position[0] < -1.56 && hand_time_ > 1)) || ((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
             {
+                 if(((robot_position_.x > old_robot_position_ .x && robot_position_.x > 0 && last_location == "left") || (robot_position_.x < old_robot_position_.x && robot_position_.x < 0 && last_location == "right")))
+                 {
+                    execute_command_joints(command_key_vec[1]);
+                 }
                  execute_command_joints(command_key_vec[2]);
                  old_robot_position_.x = robot_position_.x;
                  old_robot_position_.y = robot_position_.y;
