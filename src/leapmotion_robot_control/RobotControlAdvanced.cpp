@@ -216,7 +216,7 @@ private:
         // Initialize the command map with predefined joint angles for each command
         command_map_["leftapproach"] = {-1.588, -1.25, -0.98, -1.04, 1.58, 0};
         command_map_["lefttop"] = {-1.66, -1.08, -1.48, -0.91, 1.61, 0};
-        command_map_["leftcenter"] = {-1.71, -1.204, -2.08, -0.91, 1.61, 0};
+        command_map_["leftcenter"] = {-1.66, -1.08, -1.48, -0.91, 1.61, 0};
         command_map_["leftbottom"] = {-1.71, -1.23, -1.72, -0.91, 1.61, 0};
         command_map_["topangles"] = {1.371, -1.332, 1.011};
         command_map_["centerangles"] = {1.660, -1.720, 0.719};
