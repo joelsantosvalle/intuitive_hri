@@ -16,7 +16,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         results = holistic.process(frame_rgb)
 
         if results.pose_landmarks:
-            # Example: Print the z-coordinate (depth) of the nose landmark
             print("Nose depth:", results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE].z)
 
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
