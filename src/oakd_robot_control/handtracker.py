@@ -24,7 +24,7 @@ while True:
         print("Error: Could not read frame.")
         break
 
-    # Flip the frame for a mirrored view (optional)
+    # Flip the frame for a mirrored view
     frame = cv2.flip(frame, 1)
 
     # Convert the frame to RGB for MediaPipe processing
