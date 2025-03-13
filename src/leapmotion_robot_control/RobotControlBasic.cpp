@@ -1,3 +1,14 @@
+/**
+ * RobotControlBasic.cpp
+ *
+ * @date 11.09.2024
+ * @author Joel Santos
+ *
+ * This program controls a UR3 robotic arm and a Robotiq gripper. It listens to 
+ * sensor (Leap Motion) data and decides when to pick up, place, or move 
+ * the robotic arm based on that data.
+ */
+
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>

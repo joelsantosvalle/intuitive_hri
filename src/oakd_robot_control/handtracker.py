@@ -1,8 +1,21 @@
+"""
+HandTracking3D.py
+
+@date 12.12.2024
+@author Joel Santos
+
+This script uses MediaPipe's Hands model to track and analyze hand movements in real-time 
+from a webcam feed. It detects and visualizes key hand landmarks while computing the 
+3D coordinates of the palm center.
+
+Press 'q' to exit the application.
+"""
+
 import cv2
 import mediapipe as mp
 import numpy as np
 
-# Initialize MediaPipe Hands
+# Initialize MediaPipe Hands model
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False, 
                        max_num_hands=1, 
@@ -31,6 +44,7 @@ while True:
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb_frame)
 
+    # Process detected hands
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             # Extract landmark coordinates
@@ -53,21 +67,23 @@ while True:
             # Print the 3D coordinates of the palm center
             print(f"Palm center in 3D: x={center_3d[0]:.4f}, y={center_3d[1]:.4f}, z={center_3d[2]:.4f}")
 
-            # Draw the landmarks and center
+            # Draw hand landmarks
             for point in points_2d:
-                cv2.circle(frame, point, 5, (0, 255, 0), -1)  
+                cv2.circle(frame, point, 5, (0, 255, 0), -1)  # Draw individual landmarks
+
+            # Highlight the wrist (landmark index 0) as the reference point
             cv2.circle(frame, points_2d[0], 9, (0, 0, 255), -1)  
             cv2.putText(frame, "Center", points_2d[0], cv2.FONT_HERSHEY_SIMPLEX, 
                         0.5, (255, 0, 0), 2)
 
-            # Draw the hand landmarks
+            # Draw the hand connections
             mp.solutions.drawing_utils.draw_landmarks(
                 frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-    # Display the frame
+    # Display the processed frame
     cv2.imshow('Hand Center Detection', frame)
 
-    # Break the loop if 'q' is pressed
+    # Exit if 'q' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
